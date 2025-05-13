@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+    <head>
+        <!--
+            ==========================================================================
+            Meta and Title
+            --------------------------------------------------------------------------
+            - Set character encoding
+            - Set page title (dynamic via Jinja2)
+            - Link to external stylesheets
+            ==========================================================================
+        -->
+        <meta charset="UTF-8">
+        <title>{{ title or "Chat Bot Web Service" }}</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+    </head>
+
+
+    <body>
+        <!--
+            ==========================================================================
+            Header and Navigation
+            --------------------------------------------------------------------------
+            - Contains navigation bar with links to all main pages
+            ==========================================================================
+        -->
+        <header>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('config') }}">Config</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('alerts') }}">Alerts</a></li>
+                    <li><a href="{{ url_for('plugins') }}">Plugins</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        
+        <!--
+            ==========================================================================
+            Main Content Area
+            --------------------------------------------------------------------------
+            - Content block to be filled by child templates
+            ==========================================================================
+        -->
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </body>
+
+
+</html>

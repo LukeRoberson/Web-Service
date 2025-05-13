@@ -1,0 +1,23 @@
+#
+# A list of plugins to be loaded by the application.
+#
+
+# Plugin list
+- Test Plugin:
+  name: "Test Plugin"
+  description: "A test plugin for demonstration purposes"
+  webhook:
+    url: "webhook-url"
+    secret: "webhook-secret"
+    allowed-ip:
+      - "0.0.0.0"
+
+- Another Test Plugin:
+  name: "Test Plugin #2"
+  description: "Another plug lives here"
+  webhook:
+    url: "webhook-url"
+    secret: "webhook-secret"
+    allowed-ip:
+      - "10.10.10.10"
+      - "10.36.0.0/16"

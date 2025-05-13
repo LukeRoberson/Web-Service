@@ -1,0 +1,245 @@
+<!--
+    ==========================================================================
+    Configuration Page
+    --------------------------------------------------------------------------
+    - Configure the application as a whole
+    - Cards for each category of configuration
+    --------------------------------------------------------------------------
+    Categories:
+    - Azure
+    - Authentication
+    - Teams
+    - SQL
+    - Web
+    ==========================================================================
+-->
+
+{% extends "base.html" %}
+{% block content %}
+<h1>Configuration</h1>
+</br>
+
+<!--
+    ==========================================================================
+    Azure
+    --------------------------------------------------------------------------
+    Tenant ID - The ID of the Azure tenant
+    ==========================================================================
+-->
+<div class="w3-card-4">
+    <!-- General Azure  -->
+    <header class="w3-container w3-light-grey">
+        <h3>Azure</h3>
+    </header>
+
+    <form class="w3-container w3-padding-16">
+        <!-- Tenant ID - String -->
+        <label>Tenant ID</label>
+        <input class="w3-input w3-border" type="text" placeholder="Tenant ID" name="tenant_id" required>
+    </form>
+
+    <!-- Save button -->
+    <button class="w3-button w3-green w3-block" name="azure_save">Save</button>
+</div>
+</br></br>
+
+
+<!--
+    ==========================================================================
+    Authentication
+    --------------------------------------------------------------------------
+    app-id - The ID of the Azure application for authentication
+    app-secret - The encrypted secret
+    salt - The salt for the encrypted secret
+    redirect-uri - The URL to redirect to after authentication
+    admin-group - The Azure group ID for admin users
+    ==========================================================================
+-->
+<div class="w3-card-4">
+    <!-- Azure - Authentication -->
+    <header class="w3-container w3-light-grey">
+        <h3>Authentication</h3>
+    </header>
+
+    <form class="w3-container w3-padding-16">
+        <!-- App ID - String -->
+        <label>App ID</label>
+        <input class="w3-input w3-border w3-padding" type="text" placeholder="Tenant ID" name="auth_app_id" required>
+        <br>
+
+        <!-- App Secret - The secret for the azure app - This gets encrypted -->
+        <label>App Secret</label>
+        <input class="w3-input w3-border" type="text" placeholder="App Secret" name="auth_app_secret" required>
+        <br>
+
+        <!-- Salt - The salt for the encrypted secret -->
+        <label>Salt</label>
+        <input class="w3-input w3-border" type="text" placeholder="Salt" name="auth_salt">
+        <br>
+
+        <!-- Redirect URI - The URL to redirect to after authentication -->
+        <label>Redirect URI</label>
+        <input class="w3-input w3-border" type="text" placeholder="Redirect URI" name="auth_redirect_uri" required>
+        <br>
+
+        <!-- Admin Group - The Azure group ID for admin users -->
+        <label>Admin Group</label>
+        <input class="w3-input w3-border" type="text" placeholder="Admin Group" name="auth_admin_group" required>
+        <br>
+    </form>
+
+    <!-- Save button -->
+    <button class="w3-button w3-green w3-block" name="auth_save">Save</button>
+</div>
+</br></br>
+
+
+<!--
+    ==========================================================================
+    Teams
+    --------------------------------------------------------------------------
+    app-id - The ID of the Azure application for Teams
+    app-secret - The encrypted secret
+    salt - The salt for the encrypted secret
+    base-url - The base URL for the Teams application
+    user - The bot's user name
+    user-id - The bot's user ID
+    public-key - The public key file
+    private-key - The private key file
+    ==========================================================================
+-->
+<div class="w3-card-4">
+    <!-- Azure - Teams -->
+    <header class="w3-container w3-light-grey">
+        <h3>Teams</h3>
+    </header>
+
+    <form class="w3-container w3-padding-16">
+        <!-- App ID -->
+        <label>App ID</label>
+        <input class="w3-input w3-border w3-padding" type="text" placeholder="Tenant ID" name="teams_app_id">
+        <br>
+
+        <!-- App Secret - The secret for the azure app - This gets encrypted -->
+        <label>App Secret</label>
+        <input class="w3-input w3-border" type="text" placeholder="App Secret" name="teams_app_secret">
+        <br>
+
+        <!-- Salt - The salt for the encrypted secret -->
+        <label>Salt</label>
+        <input class="w3-input w3-border" type="text" placeholder="Salt" name="teams_salt">
+        <br>
+
+        <!-- Base URL - The base URL for the API -->
+        <label>Base URL</label>
+        <input class="w3-input w3-border" type="text" placeholder="Base URL" name="teams_base_url">
+        <br>
+
+        <!-- User Name - The user name of the chat bot -->
+        <label>User Name</label>
+        <input class="w3-input w3-border" type="text" placeholder="User Name" name="teams_user_name">
+        <br>
+
+        <!-- User ID - The chat bot's ID in Azure -->
+        <label>User ID</label>
+        <input class="w3-input w3-border" type="text" placeholder="User ID" name="teams_user_id">
+        <br>
+
+        <!-- Public Key - Public Key file for chats -->
+        <label>Public Key (file)</label>
+        <input class="w3-input w3-border" type="text" placeholder="Filename" name="teams_public_key">
+        <br>
+
+        <!-- Private Key - Private Key file for chats -->
+        <label>Private Key (file)</label>
+        <input class="w3-input w3-border" type="text" placeholder="Filename" name="teams_private_key">
+        <br>
+    </form>
+
+    <!-- Save button -->
+    <button class="w3-button w3-green w3-block" name="teams_save">Save</button>
+</div>
+</br></br>
+
+
+
+<!--
+    ==========================================================================
+    SQL
+    --------------------------------------------------------------------------
+    server - The SQL server name or IP
+    port - The SQL server port
+    database - The SQL database name
+    user - The SQL user name
+    password - The SQL user password
+    salt - The salt for the encrypted password
+    ==========================================================================
+-->
+<div class="w3-card-4">
+    <!-- SQL -->
+    <header class="w3-container w3-light-grey">
+        <h3>SQL Database</h3>
+    </header>
+
+    <form class="w3-container w3-padding-16">
+        <!-- Server -->
+        <label>Server</label>
+        <input class="w3-input w3-border w3-padding" type="text" placeholder="my_server" name="sql_server">
+        <br>
+
+        <!-- Port -->
+        <label>Port</label>
+        <input class="w3-input w3-border w3-padding" type="text" placeholder="1433" name="sql_port">
+        <br>
+
+        <!-- Database -->
+        <label>Database</label>
+        <input class="w3-input w3-border w3-padding" type="text" placeholder="my_database" name="sql_database">
+        <br>
+
+        <!-- Username (Service Account) -->
+        <label>Username</label>
+        <input class="w3-input w3-border w3-padding" type="text" placeholder="sa_username" name="sql_username">
+        <br>
+
+        <!-- Password - This will be encrypted -->
+        <label>Password</label>
+        <input class="w3-input w3-border w3-padding" type="text" placeholder="my password" name="sql_password">
+        <br>
+
+        <!-- Salt - Goes with encrypted password -->
+        <label>Salt</label>
+        <input class="w3-input w3-border w3-padding" type="text" placeholder="salt" name="sql_salt">
+        <br>
+    </form>
+
+    <!-- Save button -->
+    <button class="w3-button w3-green w3-block" name="sql_save">Save</button>
+</div>
+</br></br>
+
+
+<!--
+    ==========================================================================
+    Web
+    --------------------------------------------------------------------------
+    Debug - Enable or disable flask debug mode
+    ==========================================================================
+-->
+<div class="w3-card-4">
+    <!-- Web interface settings  -->
+    <header class="w3-container w3-light-grey">
+        <h3>Web Interface</h3>
+    </header>
+
+    <form class="w3-container w3-padding-16">
+        <!-- Debug mode - True or False -->
+        <label>Flask Debug Mode</label>
+        <input class="w3-check" type="checkbox" name="web_debug">
+    </form>
+
+    <!-- Save button -->
+    <button class="w3-button w3-green w3-block" name="web_save">Save</button>
+</div>
+</br></br>
+{% endblock %}

@@ -1,0 +1,7 @@
+.venv/
+.vscode/
+*.pyc
+*.pyo
+*.cer
+*.key
+*.pem

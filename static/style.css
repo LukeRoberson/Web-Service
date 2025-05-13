@@ -1,0 +1,63 @@
+/* ==========================================================================
+   Base Styles
+   ========================================================================== */
+
+/* Set global font and background for the body */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f8f9fa;
+}
+
+
+/* ==========================================================================
+   Header and Navigation
+   ========================================================================== */
+
+/* Style the header background and padding */
+header {
+    background: #343a40;
+    padding: 1em 0;
+}
+
+/* Style the navigation list for horizontal layout and centering */
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+/* Add spacing between navigation items */
+nav li {
+    margin: 0 1.5em;
+}
+
+/* Style navigation links: color, font, and remove underline */
+nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Add underline on hover for navigation links */
+nav a:hover {
+    text-decoration: underline;
+}
+
+
+/* ==========================================================================
+   Main Content Area
+   ========================================================================== */
+
+/* Style the main content area: width, margin, background, padding, border radius, and shadow */
+main {
+    max-width: 800px;
+    margin: 2em auto;
+    background: #fff;
+    padding: 2em;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}

@@ -1,0 +1,101 @@
+<!--
+    ==========================================================================
+    About Page
+    --------------------------------------------------------------------------
+    - Display diagnostic information about the application
+    - Display the status of the services
+    ==========================================================================
+-->
+
+{% extends "base.html" %}
+{% block content %}
+<h1>About</h1>
+
+<!--
+    ==========================================================================
+    Table of information
+    --------------------------------------------------------------------------
+    - Python Version
+    - Flask Version
+    - Flask Debug Mode (True/False)
+    ==========================================================================
+-->
+<div class="w3-container w3-card w3-padding-16">
+    <table class="w3-table w3-striped">
+        <tr>
+            <th>Python version</th>
+            <td>{{ python_version }}</td>
+        </tr>
+        <tr>
+            <th>Flask version</th>
+            <td>{{ flask_version }}</td>
+        </tr>
+        <tr>
+            <th>Flask Debug mode</th>
+            <td>{{ debug_mode }}</td>
+        </tr>
+    </table>
+</div>
+</br>
+
+<!--
+    ==========================================================================
+    Service Status
+    --------------------------------------------------------------------------
+    - Web Interface
+    - Security
+    - Logging
+    - SQL
+    - Teams
+    --------------------------------------------------------------------------
+    Contains:
+    - Service: The name of the service
+    - Version: The version of the service
+    - Status: The status of the service (up or down) as a badge (traffic light)
+    ==========================================================================
+-->
+<div class="w3-container w3-card w3-padding-16">
+    <table class="w3-table w3-striped">
+        <tr>
+            <th>Service</th>
+            <th>Version</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>Web Interface</td>
+            <td>0.0.0</td>
+            <td>
+                <span class="w3-badge w3-green">↑</span>
+            </td>
+        </tr>
+        <tr>
+            <td>Security</td>
+            <td>0.0.0</td>
+            <td>
+                <span class="w3-badge w3-green">↑</span>
+            </td>
+        </tr>
+        <tr>
+            <td>Logging</td>
+            <td>0.0.0</td>
+            <td>
+                <span class="w3-badge w3-green">↑</span>
+            </td>
+        </tr>
+        <tr>
+            <td>SQL</td>
+            <td>0.0.0</td>
+            <td>
+                <span class="w3-badge w3-green">↑</span>
+            </td>
+        </tr>
+        <tr>
+            <td>Teams</td>
+            <td>0.0.0</td>
+            <td>
+                <span class="w3-badge w3-green">↑</span>
+            </td>
+        </tr>
+    </table>
+</div>
+{% endblock %}

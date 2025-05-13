@@ -1,0 +1,59 @@
+<!--
+    ==========================================================================
+    Plugins Page
+    --------------------------------------------------------------------------
+    - Register a new plugin
+    - Display the currently registered plugins
+    - Configure and remove buttons for each plugin
+    ==========================================================================
+-->
+
+{% extends "base.html" %}
+{% block content %}
+<h1>Plugins</h1>
+
+<!--
+    ==========================================================================
+    Button to register a new plugin
+    --------------------------------------------------------------------------
+    Future: Open a modal to register a new plugin
+    ==========================================================================
+-->
+<div class="container w3-padding-32">
+    <button class="w3-button w3-green">Register New Plugin</button>
+</div>
+
+<!--
+    ==========================================================================
+    Plugin Cards
+    --------------------------------------------------------------------------
+    Header: Plugin name
+    Body: Plugin description, configure, and remove buttons
+    Footer: Plugin version
+    ==========================================================================
+-->
+{% for plugin in plugins %}
+<div class="w3-card-4">
+    <!-- Plugin Name as a header -->
+    <header class="w3-container w3-light-grey">
+        <h4>{{ plugin.name }}</h4>
+    </header>
+
+    <div class="w3-container w3-padding-16">
+        <!-- Description as a paragraph -->
+        <p>{{ plugin.description }}</p>
+
+        <!-- Configure and Remove buttons -->
+        <button class="w3-button w3-green">Configure</button>
+        <button class="w3-button w3-red">Remove</button>
+    </div>
+
+    <!-- Version as a footer -->
+    <footer class="w3-container w3-light-grey">
+        <p>Version 0.0.0</p>
+    </footer>
+</div>
+</br></br>
+{% endfor %}
+
+{% endblock %}
