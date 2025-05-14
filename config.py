@@ -65,6 +65,69 @@ class PluginConfig:
         ]
         '''
 
+    def __len__(
+        self
+    ) -> int:
+        '''
+        Magic method to get the length of the config list.
+
+        Returns:
+            int: The number of plugins in the config list.
+        '''
+        return len(self.config)
+
+    def __getitem__(
+        self,
+        index
+    ) -> dict:
+        '''
+        Magic method to get an item from the config list by index.
+
+        Args:
+            index (int): Index of the item to be retrieved.
+
+        Returns:
+            dict: The plugin configuration at the specified index.
+        '''
+        return self.config[index]
+
+    def __iter__(
+        self
+    ) -> iter:
+        '''
+        Magic method to iterate over the config list.
+
+        Returns:
+            iter: An iterator over the config list.
+        '''
+        return iter(self.config)
+
+    def __contains__(
+        self,
+        name
+    ) -> bool:
+        '''
+        Magic method to check if a plugin name exists in the config list.
+
+        Args:
+            name (str): Name of the plugin to be checked.
+
+        Returns:
+            bool: True if the plugin name exists, False otherwise.
+        '''
+        return any(entry['name'] == name for entry in self.config)
+
+    def __repr__(
+        self
+    ) -> str:
+        '''
+        Magic method to represent the PluginConfig object as a string.
+
+        Returns:
+            str: String representation of the PluginConfig object.
+        '''
+        return f"<PluginConfig plugins={len(self.config)}>"
+
     def update_config(
         self,
         new_config: dict,
@@ -201,8 +264,8 @@ class PluginConfig:
 
         # Find and remove the entry
         for entry in self.config:
-            print(f"Looing for {name}, found {entry['name']}")
             if entry['name'] == name:
+                # Remove the entry from the list
                 self.config.remove(entry)
 
                 # Save the updated config back to the YAML file

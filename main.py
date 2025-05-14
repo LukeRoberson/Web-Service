@@ -11,13 +11,23 @@ Example:
 from flask import Flask, render_template, request
 import flask
 import sys
+from colorama import Fore, Style
 from config import PluginConfig
 
 # Create the Flask application
 app = Flask(__name__)
 
 # Load the plugin configuration
+print()
+print(Fore.YELLOW + "Loading plugins..." + Style.RESET_ALL)
 plugin_list = PluginConfig()
+print(Fore.GREEN, len(plugin_list), Style.RESET_ALL, "plugins loaded")
+
+print()
+print(Fore.YELLOW + "Loaded plugins:" + Style.RESET_ALL)
+for plugin in plugin_list:
+    print("  ", plugin['name'])
+print()
 
 
 @app.route('/config')
