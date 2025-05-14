@@ -58,9 +58,18 @@ def about():
 
 @app.route('/alerts')
 def alerts():
+    '''
+    Route to display the alerts page.
+    Gets the recent alerts from the logger and passes them to the template.
+    '''
+
+    # Collect a list of alerts
+    alerts = logger.get_recent_alerts()
+
     return render_template(
         'alerts.html',
-        title="Alerts"
+        title="Alerts",
+        alerts=alerts,
     )
 
 
@@ -138,7 +147,7 @@ def api_plugins():
 def api_webhook():
     """
     API endpoint to receive webhooks from plugins.
-    Called by the plugin when a webhook is received.
+    POST from the plugin when a webhook is received.
 
     Returns:
         JSON response indicating success.
@@ -147,17 +156,17 @@ def api_webhook():
     # The body of the request
     data = request.json
 
-    # Process the webhook data
+    # Process the webhook data, store in the DB
     logger.log_alert(
         source=data['source'],
         type=data['type'],
         message=data['message']
     )
 
-    # Print the webhook data to the console
-    for entry in logger.get_recent_alerts():
-        print(entry)
+    # Purge old alerts
+    logger.purge_old_alerts()
 
+    # Return a success response
     return flask.jsonify(
         {
             'result': 'success'

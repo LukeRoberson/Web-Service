@@ -10,7 +10,27 @@
 
 {% extends "base.html" %}
 {% block content %}
-<h1>Live Alerts</h1>
+<!--
+    ==========================================================================
+    Page Title and Refresh Button
+    --------------------------------------------------------------------------
+    - Title: "Live Alerts"
+    - Refresh button: reloads the page to get the latest alerts
+    - This is a separate section to align the refresh button with the title
+    ==========================================================================
+-->
+<div class="w3-container w3-padding-16" style="padding-left:0; padding-right:0;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <!-- Title -->
+        <h1 style="margin: 0; text-align: left;">Live Alerts</h1>
+        
+        <!-- Refresh Button -->
+        <i class="fa fa-refresh"
+           style="color:green; font-size:24px; cursor:pointer; text-align: right;"
+           onclick="location.reload();"
+           title="Refresh"></i>
+    </div>
+</div>
 
 <!--
     ==========================================================================
@@ -26,18 +46,24 @@
         <tr>
             <th>Time</th>
             <th>Source</th>
+            <th>Type</th>
             <th>Message</th>
         </tr>
+        {% for alert in alerts %}
         <tr>
-            <td>2023-10-01 12:00:00</td>
-            <td>Security</td>
-            <td>User logged on</td>
+            <!-- Timestamp -->
+            <td>{{ alert[0] }}</td>
+
+            <!-- Source -->
+            <td>{{ alert[1] }}</td>
+
+            <!-- Type -->
+            <td>{{ alert[2] }}</td>
+
+            <!-- Message -->
+            <td>{{ alert[3] }}</td>
         </tr>
-        <tr>
-            <td>2023-10-01 12:00:00</td>
-            <td>Some Plugin</td>
-            <td>A webhook of some sort</td>
-        </tr>
+        {% endfor %}
     </table>
 </div>
 
