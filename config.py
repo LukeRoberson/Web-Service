@@ -6,6 +6,7 @@ Usage:
 """
 
 import yaml
+from colorama import Fore, Style
 
 
 class PluginConfig:
@@ -19,11 +20,32 @@ class PluginConfig:
             Initializes the PluginConfig object by reading the YAML file
             and storing the values in instance variables.
 
+        __len__(self):
+            Returns the number of plugins in the config list.
+
+        __getitem__(self, index):
+            Returns the plugin configuration at the specified index.
+
+        __iter__(self):
+            Returns an iterator over the config list.
+
+        __contains__(self, name):
+            Checks if a plugin name exists in the config list.
+
+        __repr__(self):
+            Returns a string representation of the PluginConfig object.
+
+        load_config(self):
+            Loads the configuration from the YAML file.
+
         update_config(self, new_config):
             Updates the configuration with a new list of dictionaries.
 
         register(self, config):
             Registers a new plugin by adding it to the configuration.
+
+        delete(self, name):
+            Deletes a plugin from the configuration.
     '''
 
     def __init__(
@@ -32,38 +54,15 @@ class PluginConfig:
     ) -> None:
         '''
         Class constructor
-
-        Reads the YAML file and initializes the instance variables.
-        A list of dictionaries is created from the YAML file
-            and stored in the instance variable `self.config`.
+        Prepares variables
 
         Args:
             file_path (str): Path to the YAML configuration file.
         '''
 
-        # Read the YAML file - Automatically stored as a list of dictionaries
-        with open(file_name, "r", encoding="utf-8") as f:
-            self.config = yaml.safe_load(f)
-
-        '''
-        Config format:
-
-        [
-            {
-                "name": "<NAME>",
-                "description": "<DESC>",
-                "webhook": {
-                    "url': "<URL>",
-                    "secret": <SECRET>,
-                    "allowed-ip": [
-                        "<IP1>",
-                        "<IP2>"
-                    ]
-                }
-            },
-            {...}
-        ]
-        '''
+        # Prepare the config
+        self.plugin_file = file_name
+        self.config = []
 
     def __len__(
         self
@@ -128,6 +127,41 @@ class PluginConfig:
         '''
         return f"<PluginConfig plugins={len(self.config)}>"
 
+    def load_config(
+        self,
+    ) -> None:
+        '''
+        Loads the configuration from the YAML file.
+
+        Reads the YAML file and initializes the instance variables.
+        A list of dictionaries is created from the YAML file
+            and stored in the instance variable `self.config`.
+
+        '''
+
+        with open(self.plugin_file, "r", encoding="utf-8") as f:
+            self.config = yaml.safe_load(f)
+
+        '''
+        Config format:
+
+        [
+            {
+                "name": "<NAME>",
+                "description": "<DESC>",
+                "webhook": {
+                    "url': "<URL>",
+                    "secret": <SECRET>,
+                    "allowed-ip": [
+                        "<IP1>",
+                        "<IP2>"
+                    ]
+                }
+            },
+            {...}
+        ]
+        '''
+
     def update_config(
         self,
         new_config: dict,
@@ -156,9 +190,21 @@ class PluginConfig:
         }
         '''
 
+        print(
+            Fore.YELLOW,
+            f"DEBUG: Attempting to update config: {new_config}",
+            Style.RESET_ALL
+        )
+
         # Find existing entry in config
         for entry in self.config:
             if (entry['name']) == new_config['plugin_name']:
+                print(
+                    Fore.YELLOW,
+                    f"DEBUG: Found matching entry: {entry['name']}",
+                    Style.RESET_ALL
+                )
+
                 # Update the entry with new values
                 entry['name'] = (
                     new_config['name']
@@ -180,6 +226,18 @@ class PluginConfig:
                     new_config['webhook']['allowed-ip']
                 )
 
+                print(
+                    Fore.YELLOW,
+                    f"DEBUG: Updated: {entry}",
+                    Style.RESET_ALL
+                )
+
+                print(
+                    Fore.YELLOW,
+                    f"DEBUG: Current config: {self.config}",
+                    Style.RESET_ALL
+                )
+
                 # Save the updated config back to the YAML file
                 with open("config/plugins.yaml", "w", encoding="utf-8") as f:
                     yaml.dump(
@@ -189,10 +247,21 @@ class PluginConfig:
                         allow_unicode=True
                     )
 
+                with open(self.plugin_file, "r", encoding="utf-8") as f:
+                    print(
+                        Fore.YELLOW,
+                        f"DEBUG: YAML: {yaml.safe_load(f)}",
+                        Style.RESET_ALL
+                    )
+
                 return True
 
         # If no matching entry is found, return False
-        print("Entry not found")
+        print(
+            Fore.RED,
+            f"Entry {new_config['plugin_name']} not found",
+            Style.RESET_ALL
+        )
         return False
 
     def register(
@@ -222,6 +291,12 @@ class PluginConfig:
         }
         '''
 
+        print(
+            Fore.YELLOW,
+            f"DEBUG: Attempting to register plugin: {config}",
+            Style.RESET_ALL
+        )
+
         # Create a new entry
         entry = {
             "name": config['name'],
@@ -233,8 +308,19 @@ class PluginConfig:
             }
         }
 
+        print(
+            Fore.YELLOW,
+            f"DEBUG: Adding entry: {entry}",
+            Style.RESET_ALL
+        )
+
         # Append the new entry to the existing config
         self.config.append(entry)
+        print(
+            Fore.YELLOW,
+            f"DEBUG: Current config: {self.config}",
+            Style.RESET_ALL
+        )
 
         # Save the updated config back to the YAML file
         with open("config/plugins.yaml", "w", encoding="utf-8") as f:
@@ -245,7 +331,13 @@ class PluginConfig:
                 allow_unicode=True
             )
 
-        print(entry)
+        with open(self.plugin_file, "r", encoding="utf-8") as f:
+            print(
+                Fore.YELLOW,
+                f"DEBUG: YAML: {yaml.safe_load(f)}",
+                Style.RESET_ALL
+            )
+
         return True
 
     def delete(
@@ -262,11 +354,29 @@ class PluginConfig:
             bool: True if the plugin was deleted successfully, False otherwise.
         '''
 
+        print(
+            Fore.YELLOW,
+            f"DEBUG: Attempting to delete plugin: {name}",
+            Style.RESET_ALL
+        )
+
         # Find and remove the entry
         for entry in self.config:
             if entry['name'] == name:
+                print(
+                    Fore.YELLOW,
+                    f"DEBUG: Found matching entry: {entry['name']}",
+                    Style.RESET_ALL
+                )
+
                 # Remove the entry from the list
                 self.config.remove(entry)
+
+                print(
+                    Fore.YELLOW,
+                    f"DEBUG: Current config: {self.config}",
+                    Style.RESET_ALL
+                )
 
                 # Save the updated config back to the YAML file
                 with open("config/plugins.yaml", "w", encoding="utf-8") as f:
@@ -277,10 +387,21 @@ class PluginConfig:
                         allow_unicode=True
                     )
 
+                with open(self.plugin_file, "r", encoding="utf-8") as f:
+                    print(
+                        Fore.YELLOW,
+                        f"DEBUG: YAML: {yaml.safe_load(f)}",
+                        Style.RESET_ALL
+                    )
+
                 return True
 
         # If no matching entry is found, return False
-        print("Entry not found")
+        print(
+            Fore.RED,
+            f"Entry {name} not found",
+            Style.RESET_ALL
+        )
         return False
 
 

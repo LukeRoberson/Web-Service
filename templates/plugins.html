@@ -35,6 +35,14 @@
             }
         };
 
+        console.log("DEBUG: Plugin config update");
+        console.log("Original Name: " + form.original_name.value);
+        console.log("Plugin Name: " + form.name.value);
+        console.log("Description: " + form.description.value);
+        console.log("Webhook URL: " + form.url.value);
+        console.log("Webhook Secret: " + form.secret.value);
+        console.log("Webhook Allowed IPs: " + form.ip.value.split(',').map(ip => ip.trim()));
+
         // API call - PATCH to the web-interface
         fetch('/api/plugins', {
             method: 'PATCH',
@@ -76,6 +84,13 @@
             }
         };
 
+        console.log("DEBUG: Registering new plugin");
+        console.log("Plugin Name: " + form.name.value);
+        console.log("Description: " + form.description.value);
+        console.log("Webhook URL: " + form.url.value);
+        console.log("Webhook Secret: " + form.secret.value);
+        console.log("Webhook Allowed IPs: " + form.ip.value.split(',').map(ip => ip.trim()));
+
         // API call - POST to the web-interface
         fetch('/api/plugins', {
             method: 'POST',
@@ -109,6 +124,9 @@
         const data = {
             name: name,
         };
+
+        console.log("DEBUG: Deleting plugin");
+        console.log("Plugin Name: " + name);
 
         // API call - DELETE to the web-interface
         fetch('/api/plugins', {
@@ -212,6 +230,15 @@
 </div>
 
 {% for plugin in plugins %}
+<script>
+    console.log("DEBUG: Plugin data");
+    console.log("Plugin Name: {{ plugin.name }}");
+    console.log("Description: {{ plugin.description }}");
+    console.log("Webhook URL: {{ plugin.webhook.url }}");
+    console.log("Webhook Secret: {{ plugin.webhook.secret }}");
+    console.log("Webhook Allowed IPs: {{ plugin.webhook['allowed-ip'] }}");
+</script>
+
 <div class="w3-card-4">
     <!-- Plugin Name as a header -->
     <header class="w3-container w3-light-grey">

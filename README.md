@@ -30,6 +30,13 @@ docker run -p 80:5000 web-interface
 ```
 
 
+</br></br>
+To push the image to docker hub:
+
+```
+docker push <username>/web-interface:latest
+```
+
 
 
 </br></br>

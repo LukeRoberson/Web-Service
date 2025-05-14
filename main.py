@@ -21,6 +21,7 @@ app = Flask(__name__)
 print()
 print(Fore.YELLOW + "Loading plugins..." + Style.RESET_ALL)
 plugin_list = PluginConfig()
+plugin_list.load_config()
 print(Fore.GREEN, len(plugin_list), Style.RESET_ALL, "plugins loaded")
 
 print()
@@ -59,6 +60,21 @@ def alerts():
 
 @app.route('/plugins')
 def plugins():
+    # Refresh the plugin list
+    plugin_list.load_config()
+
+    print(
+        Fore.YELLOW,
+        "DEBUG: Loading plugins page",
+        Style.RESET_ALL
+    )
+    print(
+        Fore.YELLOW,
+        "DEBUG: Plugin list:",
+        plugin_list.config,
+        Style.RESET_ALL
+    )
+
     return render_template(
         'plugins.html',
         title="Plugins",
@@ -79,7 +95,11 @@ def api_plugins():
         JSON response indicating success.
     """
 
+    # The body of the request
     data = request.json
+
+    # Refresh the plugin list
+    plugin_list.load_config()
 
     # POST is used to add a new plugin
     if request.method == 'POST':
