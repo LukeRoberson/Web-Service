@@ -14,10 +14,14 @@ import sys
 from colorama import Fore, Style
 
 from config import PluginConfig
+from alerts import AlertLogger
 
 
 # Create the Flask application
 app = Flask(__name__)
+
+# Initialise the logging module
+logger = AlertLogger()
 
 # Load the plugin configuration
 print()
@@ -144,12 +148,15 @@ def api_webhook():
     data = request.json
 
     # Process the webhook data
-    print(
-        Fore.YELLOW,
-        "DEBUG: Webhook received:",
-        data,
-        Style.RESET_ALL
+    logger.log_alert(
+        source=data['source'],
+        type=data['type'],
+        message=data['message']
     )
+
+    # Print the webhook data to the console
+    for entry in logger.get_recent_alerts():
+        print(entry)
 
     return flask.jsonify(
         {

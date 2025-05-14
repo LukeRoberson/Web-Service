@@ -146,6 +146,7 @@ class AlertLogger:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 source TEXT,
+                type TEXT,
                 message TEXT
             )
         """)
@@ -154,6 +155,7 @@ class AlertLogger:
     def log_alert(
         self,
         source,
+        type,
         message
     ) -> None:
         '''
@@ -161,6 +163,7 @@ class AlertLogger:
 
         Parameters:
             source (str): The source of the alert (e.g., plugin name).
+            type (str): The type of alert (e.g., error, warning).
             message (str): The alert message.
 
         Returns:
@@ -170,9 +173,9 @@ class AlertLogger:
         with sqlite3.connect(self.db_path) as conn:
             c = conn.cursor()
             c.execute("""
-                INSERT INTO alerts (source, message)
-                VALUES (?, ?)
-            """, (source, message))
+                INSERT INTO alerts (source, type, message)
+                VALUES (?, ?, ?)
+            """, (source, type, message))
             conn.commit()
 
     def purge_old_alerts(
@@ -213,7 +216,7 @@ class AlertLogger:
         with sqlite3.connect(self.db_path) as conn:
             c = conn.cursor()
             c.execute("""
-                SELECT timestamp, source, message FROM alerts
+                SELECT timestamp, source, type, message FROM alerts
                 WHERE timestamp >= datetime('now', '-24 hours')
                 ORDER BY timestamp DESC
             """)
