@@ -56,7 +56,10 @@ def plugins():
     )
 
 
-@app.route('/api/plugins', methods=['POST'])
+@app.route(
+    '/api/plugins',
+    methods=['POST', 'PATCH', 'DELETE']
+)
 def api_plugins():
     """
     API endpoint to manage plugins.
@@ -67,7 +70,18 @@ def api_plugins():
     """
 
     data = request.json
-    result = plugin_list.update_config(data)
+
+    # POST is used to add a new plugin
+    if request.method == 'POST':
+        result = plugin_list.register(data)
+
+    # PATCH is used to update an existing plugin
+    elif request.method == 'PATCH':
+        result = plugin_list.update_config(data)
+
+    # DELETE is used to remove a plugin
+    elif request.method == 'DELETE':
+        result = plugin_list.delete(data['name'])
 
     if not result:
         return flask.jsonify(

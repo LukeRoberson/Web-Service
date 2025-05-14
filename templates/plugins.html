@@ -15,18 +15,59 @@
 {% block content %}
 <script>
     /**
-     * Function to save the plugin configuration
+     * Function to update the plugin configuration
      * 
      * @param {number} index - The index of the plugin in the list
      */
-    function savePlugin(index) {
+    function updatePlugin(index) {
         const modal = document.getElementById('modal-' + index);
         const form = modal.querySelector('form');
         
         // Create the JSON to send in the body
         const data = {
             plugin_name: form.original_name.value,
-            new_name: form.name.value,
+            name: form.name.value,
+            description: form.description.value,
+            webhook: {
+                url: form.url.value,
+                secret: form.secret.value,
+                'allowed-ip': form.ip.value.split(',').map(ip => ip.trim())
+            }
+        };
+
+        // API call - PATCH to the web-interface
+        fetch('/api/plugins', {
+            method: 'PATCH',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(response => response.json())
+        
+        // Handle the response
+        .then(result => {
+            if (result.result === 'success') {
+                alert('Saved!');
+                modal.style.display = 'none';
+                
+                // Reload the page to reflect changes
+                location.reload();
+            } else {
+                alert('Save failed!');
+            }
+        });
+    }
+</script>
+
+<script>
+    /**
+     * Function to register a new plugin
+     */
+    function registerPlugin() {
+        const modal = document.getElementById('modal-register');
+        const form = modal.querySelector('form');
+        
+        // Create the JSON to send in the body
+        const data = {
+            name: form.name.value,
             description: form.description.value,
             webhook: {
                 url: form.url.value,
@@ -57,6 +98,40 @@
     }
 </script>
 
+<script>
+    /**
+     * Function to delete a new plugin
+     * 
+     * @param {string} name - The name of the plugin to delete
+     */
+    function deletePlugin(name) {
+        // Create the JSON to send in the body
+        const data = {
+            name: name,
+        };
+
+        // API call - DELETE to the web-interface
+        fetch('/api/plugins', {
+            method: 'DELETE',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(response => response.json())
+        
+        // Handle the response
+        .then(result => {
+            if (result.result === 'success') {
+                alert('Deleted!');
+                
+                // Reload the page to reflect changes
+                location.reload();
+            } else {
+                alert('Delete failed!');
+            }
+        });
+    }
+</script>
+
+
 <h1>Plugins</h1>
 
 <!--
@@ -67,8 +142,60 @@
     ==========================================================================
 -->
 <div class="container w3-padding-32">
-    <button class="w3-button w3-green">Register New Plugin</button>
+    <h4>Register a new plugin</h4>
+    <button class="w3-button w3-green" onclick="document.getElementById('modal-register').style.display='block'">Register</button>
 </div>
+
+<!-- 
+    Modal for adding a new plugin
+    Reamins hidden until the Register button is clicked
+-->
+<div id="modal-register" class="w3-modal" style="display:none;">
+  <div class="w3-modal-content w3-animate-top w3-card-4">
+    
+    <!-- Modal heading -->
+    <header class="w3-container w3-light-grey">
+      <span onclick="document.getElementById('modal-register').style.display='none'"
+      class="w3-button w3-display-topright">&times;</span>
+      <h3>Register New Plugin</h3>
+    </header>
+
+    <!-- Configuration items -->
+    <form class="w3-container w3-padding-16 w3-margin">
+        <!-- Name -->
+        <label><b>Plugin Name:</b>
+            <input class="w3-input w3-border w3-margin" type="text" name="name" required>
+        </label>
+        
+        <!-- Description -->
+        <label><b>Description:</b>
+            <input class="w3-input w3-border w3-margin" type="text" name="description" required>
+        </label>
+
+        <!-- Webhook - URL -->
+        <label><b>Webhook URL:</b>
+            <input class="w3-input w3-border w3-margin" type="text" name="url" required>
+        </label>
+
+        <!-- Webhook - Secret -->
+        <label><b>Webhook Secret:</b>
+            <input class="w3-input w3-border w3-margin" type="text" name="secret">
+        </label>
+
+        <!-- Webhook - Allowed IPs -->
+        <label><b>Webhook - Allowed Source IPs:</b>
+            <input class="w3-input w3-border w3-margin" type="text" name="ip" value="0.0.0.0">
+        </label>
+    </form>
+    
+    <!-- Modal footer - Save/Cancel buttons -->
+    <footer class="w3-container w3-light-grey w3-padding-16">
+      <button class="w3-button w3-green" type="button" onclick="registerPlugin()">Save</button>
+      <button class="w3-button w3-red" onclick="document.getElementById('modal-register').style.display='none'">Cancel</button>
+    </footer>
+  </div>
+</div>
+
 
 <!--
     ==========================================================================
@@ -79,6 +206,11 @@
     Footer: Plugin version
     ==========================================================================
 -->
+<hr>
+<div class="container">
+    <h4>Registered plugins</h4>
+</div>
+
 {% for plugin in plugins %}
 <div class="w3-card-4">
     <!-- Plugin Name as a header -->
@@ -92,7 +224,7 @@
 
         <!-- Configure and Remove buttons -->
         <button class="w3-button w3-green" onclick="document.getElementById('modal-{{ loop.index }}').style.display='block'">Configure</button>
-        <button class="w3-button w3-red">Remove</button>
+        <button class="w3-button w3-red" onclick="deletePlugin('{{ plugin.name }}')">Remove</button>
     </div>
 
     <!-- Version as a footer -->
@@ -121,29 +253,34 @@
         <input type="hidden" name="original_name" value="{{ plugin.name }}">
 
         <!-- Name -->
-        <label><b>Plugin Name:</b></label>
-        <input class="w3-input w3-border w3-margin" type="text" name="name" value="{{ plugin.name or '' }}">
-        
+        <label><b>Plugin Name:</b>
+            <input class="w3-input w3-border w3-margin" type="text" name="name" value="{{ plugin.name or '' }}">
+        </label>
+
         <!-- Description -->
-        <label><b>Description:</b></label>
-        <input class="w3-input w3-border w3-margin" type="text" name="description" value="{{ plugin.description or '' }}">
-        
+        <label><b>Description:</b>
+            <input class="w3-input w3-border w3-margin" type="text" name="description" value="{{ plugin.description or '' }}">
+        </label>
+
         <!-- Webhook - URL -->
-        <label><b>Webhook URL:</b></label>
-        <input class="w3-input w3-border w3-margin" type="text" name="url" value="{{ plugin.webhook.url or '' }}">
-        
+        <label><b>Webhook URL:</b>
+            <input class="w3-input w3-border w3-margin" type="text" name="url" value="{{ plugin.webhook.url or '' }}">
+        </label>
+
         <!-- Webhook - Secret -->
-        <label><b>Webhook Secret:</b></label>
-        <input class="w3-input w3-border w3-margin" type="text" name="secret" value="{{ plugin.webhook.secret or '' }}">
-        
+        <label><b>Webhook Secret:</b>
+            <input class="w3-input w3-border w3-margin" type="text" name="secret" value="{{ plugin.webhook.secret or '' }}">
+        </label>
+
         <!-- Webhook - Allowed IPs -->
-        <label><b>Webhook - Allowed Source IPs:</b></label>
-        <input class="w3-input w3-border w3-margin" type="text" name="ip" value="{{ plugin.webhook['allowed-ip'] | join(',') or '' }}">
+        <label><b>Webhook - Allowed Source IPs:</b>
+            <input class="w3-input w3-border w3-margin" type="text" name="ip" value="{{ plugin.webhook['allowed-ip'] | join(',') or '' }}">
+        </label>
     </form>
     
     <!-- Modal footer - Save/Cancel buttons -->
     <footer class="w3-container w3-light-grey w3-padding-16">
-      <button class="w3-button w3-green" type="button" onclick="savePlugin('{{ loop.index }}')">Save</button>
+      <button class="w3-button w3-green" type="button" onclick="updatePlugin('{{ loop.index }}')">Save</button>
       <button class="w3-button w3-red" onclick="document.getElementById('modal-{{ loop.index }}').style.display='none'">Cancel</button>
     </footer>
   </div>
