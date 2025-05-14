@@ -12,7 +12,9 @@ from flask import Flask, render_template, request
 import flask
 import sys
 from colorama import Fore, Style
+
 from config import PluginConfig
+
 
 # Create the Flask application
 app = Flask(__name__)
@@ -120,6 +122,34 @@ def api_plugins():
                 'message': 'Failed to update configuration'
             }
         )
+
+    return flask.jsonify(
+        {
+            'result': 'success'
+        }
+    )
+
+
+@app.route('/api/webhook', methods=['POST'])
+def api_webhook():
+    """
+    API endpoint to receive webhooks from plugins.
+    Called by the plugin when a webhook is received.
+
+    Returns:
+        JSON response indicating success.
+    """
+
+    # The body of the request
+    data = request.json
+
+    # Process the webhook data
+    print(
+        Fore.YELLOW,
+        "DEBUG: Webhook received:",
+        data,
+        Style.RESET_ALL
+    )
 
     return flask.jsonify(
         {
