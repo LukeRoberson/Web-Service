@@ -5,11 +5,58 @@
     - Register a new plugin
     - Display the currently registered plugins
     - Configure and remove buttons for each plugin
+
+    - Add/Remove/Edit requires an API call to the web-interface
+    - Each plugin has a modal for configuration
     ==========================================================================
 -->
 
 {% extends "base.html" %}
 {% block content %}
+<script>
+    /**
+     * Function to save the plugin configuration
+     * 
+     * @param {number} index - The index of the plugin in the list
+     */
+    function savePlugin(index) {
+        const modal = document.getElementById('modal-' + index);
+        const form = modal.querySelector('form');
+        
+        // Create the JSON to send in the body
+        const data = {
+            plugin_name: form.original_name.value,
+            new_name: form.name.value,
+            description: form.description.value,
+            webhook: {
+                url: form.url.value,
+                secret: form.secret.value,
+                'allowed-ip': form.ip.value.split(',').map(ip => ip.trim())
+            }
+        };
+
+        // API call - POST to the web-interface
+        fetch('/api/plugins', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(response => response.json())
+        
+        // Handle the response
+        .then(result => {
+            if (result.result === 'success') {
+                alert('Saved!');
+                modal.style.display = 'none';
+                
+                // Reload the page to reflect changes
+                location.reload();
+            } else {
+                alert('Save failed!');
+            }
+        });
+    }
+</script>
+
 <h1>Plugins</h1>
 
 <!--
@@ -70,6 +117,9 @@
 
     <!-- Configuration items -->
     <form class="w3-container w3-padding-16 w3-margin">
+        <!-- Original Name -->
+        <input type="hidden" name="original_name" value="{{ plugin.name }}">
+
         <!-- Name -->
         <label><b>Plugin Name:</b></label>
         <input class="w3-input w3-border w3-margin" type="text" name="name" value="{{ plugin.name or '' }}">
@@ -93,7 +143,7 @@
     
     <!-- Modal footer - Save/Cancel buttons -->
     <footer class="w3-container w3-light-grey w3-padding-16">
-      <button class="w3-button w3-green" type="submit">Save</button>
+      <button class="w3-button w3-green" type="button" onclick="savePlugin('{{ loop.index }}')">Save</button>
       <button class="w3-button w3-red" onclick="document.getElementById('modal-{{ loop.index }}').style.display='none'">Cancel</button>
     </footer>
   </div>

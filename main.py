@@ -8,7 +8,7 @@ Example:
     $ python main.py
 """
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import flask
 import sys
 from config import PluginConfig
@@ -53,6 +53,34 @@ def plugins():
         'plugins.html',
         title="Plugins",
         plugins=plugin_list.config,
+    )
+
+
+@app.route('/api/plugins', methods=['POST'])
+def api_plugins():
+    """
+    API endpoint to manage plugins.
+    Called by the UI when changes are made.
+
+    Returns:
+        JSON response indicating success.
+    """
+
+    data = request.json
+    result = plugin_list.update_config(data)
+
+    if not result:
+        return flask.jsonify(
+            {
+                'result': 'error',
+                'message': 'Failed to update configuration'
+            }
+        )
+
+    return flask.jsonify(
+        {
+            'result': 'success'
+        }
     )
 
 
