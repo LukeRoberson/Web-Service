@@ -155,6 +155,12 @@ def api_webhook():
 
     # The body of the request
     data = request.json
+    print(
+        Fore.YELLOW,
+        "DEBUG: Received webhook:",
+        data,
+        Style.RESET_ALL
+    )
 
     # Process the webhook data, store in the DB
     logger.log_alert(
@@ -174,10 +180,16 @@ def api_webhook():
     )
 
 
-if __name__ == "__main__":
-    # Run the application
-    app.run(
-        debug=True,
-        host='0.0.0.0',
-        port=5000,
-    )
+'''
+NOTE: When running in a container, the host and port are set in the
+    uWSGI config. uWSGI starts the process, which means the
+    Flask app is not run directly.
+    This can be uncommented for local testing.
+'''
+# if __name__ == "__main__":
+#     # Run the application
+#     app.run(
+#         debug=True,
+#         host='0.0.0.0',
+#         port=5000,
+#     )

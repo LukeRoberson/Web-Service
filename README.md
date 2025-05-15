@@ -2,7 +2,18 @@
 
 The web interface for the application
 
-Uses Flask as the web server, and HTML/CSS/TypeScript for the UI
+Uses Flask as the web framework, and HTML/CSS/TypeScript for the UI.
+
+uWSGI is used as the web server.
+
+
+## uWSGI
+
+In the containerised environment, uWSGI is the web server. This means the uWSGI module starts the web service and listens for requests.
+
+Requests from outside the stack reach NGINX, which then proxies the requests to the web-interface service using the WSGI protocol.
+
+Requests between containers, which is required for API calls, do not get proxied through NGINX. These are sent directly between containers using the HTTP protocol.
 
 
 ## Modules
@@ -19,14 +30,6 @@ To build the container (replace 'username' with a real name):
 
 ```
 docker build -t <username>/web-interface:latest .
-```
-
-
-</br></br>
-To run the container:
-
-```
-docker run -p 80:5000 web-interface
 ```
 
 
