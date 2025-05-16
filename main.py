@@ -37,6 +37,33 @@ for plugin in plugin_list:
 print()
 
 
+# Function Factory - Function to create a function
+# Dynamic webhook handler function per plugin
+def make_dynamic_webhook_handler(plugin_name):
+    def handle_dynamic_webhook():
+        data = request.json
+        print(data)
+        return {"status": "ok"}
+    return handle_dynamic_webhook
+
+
+# Dynamically register routes for each plugin
+for plugin in plugin_list:
+    endpoint = f"webhook_{plugin['name']}"
+
+    # Register the webhook URL
+    #   (1) Use safe URL from the plugin config
+    #   (2) Use the plugin name as the endpoint (the route's name)
+    #   (3) Use the plugin name as the function name
+    #   (4) POST method only
+    app.add_url_rule(
+        plugin['webhook']['safe_url'],
+        endpoint,
+        make_dynamic_webhook_handler(plugin['name']),
+        methods=['POST']
+    )
+
+
 @app.route('/config')
 def config():
     return render_template(

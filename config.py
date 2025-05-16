@@ -7,6 +7,7 @@ Usage:
 
 import yaml
 from colorama import Fore, Style
+import urllib.parse
 
 
 class PluginConfig:
@@ -136,7 +137,8 @@ class PluginConfig:
         Reads the YAML file and initializes the instance variables.
         A list of dictionaries is created from the YAML file
             and stored in the instance variable `self.config`.
-
+        Creates a unique route for each plugin by combining the plugin name
+            and the webhook URL.
         '''
 
         with open(self.plugin_file, "r", encoding="utf-8") as f:
@@ -161,6 +163,20 @@ class PluginConfig:
             {...}
         ]
         '''
+
+        # Create the full webhook URL
+        for entry in self.config:
+            # Combine the plugin name and webhook URL to create a unique route
+            safe_url = f"/plugin/{entry['name']}/{entry['webhook']['url']}"
+
+            safe_url = safe_url.lower()
+
+            # Handle spaces and special characters in the URL
+            safe_url = safe_url.replace(" ", "_")
+            safe_url = safe_url.replace("#", "")
+
+            # Encode the URL to make it safe for use in a route
+            entry['webhook']['safe_url'] = urllib.parse.quote(safe_url)
 
     def update_config(
         self,
