@@ -15,6 +15,7 @@ from colorama import Fore, Style
 
 from config import PluginConfig
 from alerts import AlertLogger
+import requests
 
 
 # Create the Flask application
@@ -41,9 +42,19 @@ print()
 # Dynamic webhook handler function per plugin
 def make_dynamic_webhook_handler(plugin_name):
     def handle_dynamic_webhook():
-        data = request.json
-        print(data)
-        return {"status": "ok"}
+        # Proxy the webhook request to the plugin
+        response = requests.post(
+            f"http://{plugin_name}:5000/webhook",
+            json=request.json
+        )
+
+        # Proxy the response back to the original request
+        return (
+            response.content,
+            response.status_code,
+            response.headers.items()
+        )
+
     return handle_dynamic_webhook
 
 
