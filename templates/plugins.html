@@ -182,26 +182,31 @@
     <form class="w3-container w3-padding-16 w3-margin">
         <!-- Name -->
         <label><b>Plugin Name:</b>
+            <p class="w3-small w3-text-grey">This must match the service name in the Docker compose file</p>
             <input class="w3-input w3-border w3-margin" type="text" name="name" required>
         </label>
         
         <!-- Description -->
         <label><b>Description:</b>
+            <p class="w3-small w3-text-grey">A friendly description</p>
             <input class="w3-input w3-border w3-margin" type="text" name="description" required>
         </label>
 
         <!-- Webhook - URL -->
         <label><b>Webhook URL:</b>
+            <p class="w3-small w3-text-grey">Webhook destination. Will append to /plugin/[Name]</p>
             <input class="w3-input w3-border w3-margin" type="text" name="url" required>
         </label>
 
         <!-- Webhook - Secret -->
         <label><b>Webhook Secret:</b>
+            <p class="w3-small w3-text-grey">Secret to validate webhook messages (optional)</p>
             <input class="w3-input w3-border w3-margin" type="text" name="secret">
         </label>
 
         <!-- Webhook - Allowed IPs -->
         <label><b>Webhook - Allowed Source IPs:</b>
+            <p class="w3-small w3-text-grey">IP's allowed to send webhooks here (0.0.0.0 for any source)</p>
             <input class="w3-input w3-border w3-margin" type="text" name="ip" value="0.0.0.0">
         </label>
     </form>
@@ -230,15 +235,6 @@
 </div>
 
 {% for plugin in plugins %}
-<script>
-    console.log("DEBUG: Plugin data");
-    console.log("Plugin Name: {{ plugin.name }}");
-    console.log("Description: {{ plugin.description }}");
-    console.log("Webhook URL: {{ plugin.webhook.url }}");
-    console.log("Webhook Secret: {{ plugin.webhook.secret }}");
-    console.log("Webhook Allowed IPs: {{ plugin.webhook['allowed-ip'] }}");
-</script>
-
 <div class="w3-card-4">
     <!-- Plugin Name as a header -->
     <header class="w3-container w3-light-grey">
@@ -246,10 +242,19 @@
     </header>
 
     <div class="w3-container w3-padding-16">
-        <!-- Description as a paragraph -->
-        <p>{{ plugin.description }}</p>
+        <table class="w3-table">
+            <tr>
+                <td><b>Description:</b></td>
+                <td>{{ plugin.description }}</td>
+            </tr>
+            <tr>
+                <td><b>Webhook URL:</b></td>
+                <td>{{ plugin.webhook.safe_url }}</td>
+            </tr>
+        </table>
 
         <!-- Configure and Remove buttons -->
+        <br>
         <button class="w3-button w3-green" onclick="document.getElementById('modal-{{ loop.index }}').style.display='block'">Configure</button>
         <button class="w3-button w3-red" onclick="deletePlugin('{{ plugin.name }}')">Remove</button>
     </div>
@@ -281,26 +286,31 @@
 
         <!-- Name -->
         <label><b>Plugin Name:</b>
+            <p class="w3-small w3-text-grey">This must match the service name in the Docker compose file</p>
             <input class="w3-input w3-border w3-margin" type="text" name="name" value="{{ plugin.name or '' }}">
         </label>
 
         <!-- Description -->
         <label><b>Description:</b>
+            <p class="w3-small w3-text-grey">A friendly description</p>
             <input class="w3-input w3-border w3-margin" type="text" name="description" value="{{ plugin.description or '' }}">
         </label>
 
         <!-- Webhook - URL -->
         <label><b>Webhook URL:</b>
+            <p class="w3-small w3-text-grey">Webhook destination. Will append to /plugin/[Name]</p>
             <input class="w3-input w3-border w3-margin" type="text" name="url" value="{{ plugin.webhook.url or '' }}">
         </label>
 
         <!-- Webhook - Secret -->
         <label><b>Webhook Secret:</b>
+            <p class="w3-small w3-text-grey">Secret to validate webhook messages (optional)</p>
             <input class="w3-input w3-border w3-margin" type="text" name="secret" value="{{ plugin.webhook.secret or '' }}">
         </label>
 
         <!-- Webhook - Allowed IPs -->
         <label><b>Webhook - Allowed Source IPs:</b>
+            <p class="w3-small w3-text-grey">IP's allowed to send webhooks here (0.0.0.0 for any source)</p>
             <input class="w3-input w3-border w3-margin" type="text" name="ip" value="{{ plugin.webhook['allowed-ip'] | join(',') or '' }}">
         </label>
     </form>
