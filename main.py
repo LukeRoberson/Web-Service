@@ -12,10 +12,11 @@ from flask import Flask, render_template, request
 import flask
 import sys
 from colorama import Fore, Style
+import requests
+import os
 
 from config import PluginConfig
 from alerts import AlertLogger
-import requests
 
 
 # Create the Flask application
@@ -40,8 +41,12 @@ print()
 
 # Function Factory - Function to create a function
 # Dynamic webhook handler function per plugin
-def make_dynamic_webhook_handler(plugin_name):
+def make_dynamic_webhook_handler(plugin_name, ip_list):
     def handle_dynamic_webhook():
+        src = request.remote_addr
+        print(Fore.YELLOW, "DEBGU: Source IP:", src, Style.RESET_ALL)
+        print(Fore.YELLOW, "Allowed IPs:", ip_list, Style.RESET_ALL)
+
         # Proxy the webhook request to the plugin
         response = requests.post(
             f"http://{plugin_name}:5000/webhook",
@@ -61,6 +66,7 @@ def make_dynamic_webhook_handler(plugin_name):
 # Dynamically register routes for each plugin
 for plugin in plugin_list:
     endpoint = f"webhook_{plugin['name']}"
+    allowed_ips = plugin['webhook']['allowed-ip']
 
     # Register the webhook URL
     #   (1) Use safe URL from the plugin config
@@ -70,7 +76,7 @@ for plugin in plugin_list:
     app.add_url_rule(
         plugin['webhook']['safe_url'],
         endpoint,
-        make_dynamic_webhook_handler(plugin['name']),
+        make_dynamic_webhook_handler(plugin['name'], allowed_ips),
         methods=['POST']
     )
 
@@ -166,6 +172,7 @@ def api_plugins():
     elif request.method == 'DELETE':
         result = plugin_list.delete(data['name'])
 
+    # If this failed...
     if not result:
         return flask.jsonify(
             {
@@ -173,6 +180,10 @@ def api_plugins():
                 'message': 'Failed to update configuration'
             }
         )
+
+    # If successful, recycle the workers to apply the changes
+    with open('/app/reload.txt', 'a'):
+        os.utime('/app/reload.txt', None)
 
     return flask.jsonify(
         {
