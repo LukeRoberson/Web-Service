@@ -1,0 +1,17 @@
+/* 
+==========================================================================
+   Override CSS for <main> element
+   - Used in alerts.html
+   - Allows a wider view for the main content area
+   - This so the log table can be wider, and more readable
+==========================================================================
+*/
+
+main {
+    max-width: 90vw !important;         /* Allow main to use up to 90% of viewport width */
+    width: 90vw !important;             /* Set width to 90% of viewport */
+    margin-left: 10px !important;       /* Add left margin (must specify units) */
+    margin-right: 10px !important;      /* Add right margin (must specify units) */
+    padding-left: 10px !important;      /* Add left padding (must specify units) */
+    padding-right: 10px !important;     /* Add right padding (must specify units) */
+}

@@ -1,0 +1,30 @@
+/* 
+==========================================================================
+   Table formatting
+   - Used in alerts.html
+   - Formats the table for displaying alerts in a readable, log-like style
+   - Applies monospace font, custom colors, and spacing for clarity
+==========================================================================
+*/
+
+/* Set monospace font, font size, vertical alignment, and padding for all table cells */
+.w3-table th, .w3-table td {
+    font-family: "Consolas", "Menlo", "Monaco", monospace;  /* Monospace for log feel */
+    font-size: 15px;                                        /* Readable font size */
+    vertical-align: top;                                    /* Align text to the top of the cell */ 
+    padding: 6px 8px;                                       /* Padding for spacing inside cells */
+}
+
+/* Style for table data cells */
+.w3-table td {
+    background: #222831;                                  /* Dark background for log rows */
+    color: #f1f1f1;                                       /* Light text color for contrast */
+    border-bottom: 1px solid #444;                        /* Subtle row separation */
+}
+
+/* Style for table header cells */
+.w3-table th {
+    background: #393e46;                                  /* Slightly lighter header background */
+    color: #00adb5;                                       /* Accent color for header text */
+    border-bottom: 2px solid #00adb5;                     /* Stronger border for header */
+}

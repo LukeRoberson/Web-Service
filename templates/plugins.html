@@ -13,141 +13,17 @@
 
 {% extends "base.html" %}
 {% block content %}
-<script>
-    /**
-     * Function to update the plugin configuration
-     * 
-     * @param {number} index - The index of the plugin in the list
-     */
-    function updatePlugin(index) {
-        const modal = document.getElementById('modal-' + index);
-        const form = modal.querySelector('form');
-        
-        // Create the JSON to send in the body
-        const data = {
-            plugin_name: form.original_name.value,
-            name: form.name.value,
-            description: form.description.value,
-            webhook: {
-                url: form.url.value,
-                secret: form.secret.value,
-                'allowed-ip': form.ip.value.split(',').map(ip => ip.trim())
-            }
-        };
-
-        console.log("DEBUG: Plugin config update");
-        console.log("Original Name: " + form.original_name.value);
-        console.log("Plugin Name: " + form.name.value);
-        console.log("Description: " + form.description.value);
-        console.log("Webhook URL: " + form.url.value);
-        console.log("Webhook Secret: " + form.secret.value);
-        console.log("Webhook Allowed IPs: " + form.ip.value.split(',').map(ip => ip.trim()));
-
-        // API call - PATCH to the web-interface
-        fetch('/api/plugins', {
-            method: 'PATCH',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        }).then(response => response.json())
-        
-        // Handle the response
-        .then(result => {
-            if (result.result === 'success') {
-                alert('Saved!');
-                modal.style.display = 'none';
-                
-                // Reload the page to reflect changes
-                location.reload();
-            } else {
-                alert('Save failed!');
-            }
-        });
-    }
-</script>
-
-<script>
-    /**
-     * Function to register a new plugin
-     */
-    function registerPlugin() {
-        const modal = document.getElementById('modal-register');
-        const form = modal.querySelector('form');
-        
-        // Create the JSON to send in the body
-        const data = {
-            name: form.name.value,
-            description: form.description.value,
-            webhook: {
-                url: form.url.value,
-                secret: form.secret.value,
-                'allowed-ip': form.ip.value.split(',').map(ip => ip.trim())
-            }
-        };
-
-        console.log("DEBUG: Registering new plugin");
-        console.log("Plugin Name: " + form.name.value);
-        console.log("Description: " + form.description.value);
-        console.log("Webhook URL: " + form.url.value);
-        console.log("Webhook Secret: " + form.secret.value);
-        console.log("Webhook Allowed IPs: " + form.ip.value.split(',').map(ip => ip.trim()));
-
-        // API call - POST to the web-interface
-        fetch('/api/plugins', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        }).then(response => response.json())
-        
-        // Handle the response
-        .then(result => {
-            if (result.result === 'success') {
-                alert('Saved!');
-                modal.style.display = 'none';
-                
-                // Reload the page to reflect changes
-                location.reload();
-            } else {
-                alert('Save failed!');
-            }
-        });
-    }
-</script>
-
-<script>
-    /**
-     * Function to delete a new plugin
-     * 
-     * @param {string} name - The name of the plugin to delete
-     */
-    function deletePlugin(name) {
-        // Create the JSON to send in the body
-        const data = {
-            name: name,
-        };
-
-        console.log("DEBUG: Deleting plugin");
-        console.log("Plugin Name: " + name);
-
-        // API call - DELETE to the web-interface
-        fetch('/api/plugins', {
-            method: 'DELETE',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        }).then(response => response.json())
-        
-        // Handle the response
-        .then(result => {
-            if (result.result === 'success') {
-                alert('Deleted!');
-                
-                // Reload the page to reflect changes
-                location.reload();
-            } else {
-                alert('Delete failed!');
-            }
-        });
-    }
-</script>
+<!--
+    ==========================================================================
+    Scripts
+    --------------------------------------------------------------------------
+    registerplugins.js:
+        - Register a new plugin
+        - Update an existing plugin
+        - Delete a plugin
+    ==========================================================================
+-->
+<script src="{{ url_for('static', filename='js/registerplugins.js') }}"></script>
 
 
 <h1>Plugins</h1>
