@@ -16,7 +16,9 @@
     Java Script
     --------------------------------------------------------------------------
     - Auto-refresh toggle
-    - If checked, the page will auto-refresh every 10 seconds
+        - If checked, the page will auto-refresh every 10 seconds
+    - Add sorting functionality to the table
+        - Click on the column headers to sort the table
     ==========================================================================
 -->
 <script>
@@ -51,6 +53,52 @@ function stopAutoRefresh() {
     if (autoRefreshInterval) {
         clearInterval(autoRefreshInterval);
         autoRefreshInterval = null;
+    }
+}
+</script>
+
+<script>
+function sortTable(n) {
+    var table = document.querySelector("table");
+    var rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    switching = true;
+    dir = "asc"; 
+    while (switching) {
+        switching = false;
+        rows = table.rows;
+        for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("TD")[n];
+            y = rows[i + 1].getElementsByTagName("TD")[n];
+            let xContent = x.textContent || x.innerText;
+            let yContent = y.textContent || y.innerText;
+            // Try to parse as date if sorting the first column
+            if (n === 0) {
+                xContent = Date.parse(xContent) || xContent;
+                yContent = Date.parse(yContent) || yContent;
+            }
+            if (dir == "asc") {
+                if (xContent > yContent) {
+                    shouldSwitch = true;
+                    break;
+                }
+            } else if (dir == "desc") {
+                if (xContent < yContent) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+        }
+        if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            switchcount ++;
+        } else {
+            if (switchcount == 0 && dir == "asc") {
+                dir = "desc";
+                switching = true;
+            }
+        }
     }
 }
 </script>
@@ -138,10 +186,10 @@ main {
     <table class="w3-table w3-striped" style="table-layout: auto; width: 100%;">
         <thead>
             <tr>
-                <th style="white-space:nowrap;">Time</th>
-                <th style="white-space:nowrap;">Source</th>
-                <th style="white-space:nowrap;">Type</th>
-                <th>Message</th>
+                <th style="white-space:nowrap; cursor:pointer;" onclick="sortTable(0)">Time &#x25B2;&#x25BC;</th>
+                <th style="white-space:nowrap; cursor:pointer;" onclick="sortTable(1)">Source &#x25B2;&#x25BC;</th>
+                <th style="white-space:nowrap; cursor:pointer;" onclick="sortTable(2)">Type &#x25B2;&#x25BC;</th>
+                <th style="cursor:pointer;" onclick="sortTable(3)">Message &#x25B2;&#x25BC;</th>
             </tr>
         </thead>
         <tbody>
