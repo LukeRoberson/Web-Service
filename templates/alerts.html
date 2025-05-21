@@ -10,6 +10,49 @@
 
 {% extends "base.html" %}
 {% block content %}
+
+<!--
+    ==========================================================================
+    CSS Styles
+    --------------------------------------------------------------------------
+    Main
+    - Override the default W3.CSS styles to make the page full width
+    - This is necessary to ensure the table fits the screen width
+
+    Table
+    - Format the table to look like a log viewer
+    ==========================================================================
+-->
+<style>
+main {
+    max-width: 90vw !important;
+    width: 90vw !important;
+    margin-left: 10 !important;
+    margin-right: 10 !important;
+    padding-left: 10 !important;
+    padding-right: 10 !important;
+}
+</style>
+
+<style>
+.w3-table th, .w3-table td {
+    font-family: "Consolas", "Menlo", "Monaco", monospace;
+    font-size: 15px;
+    vertical-align: top;
+    padding: 6px 8px;
+}
+.w3-table td {
+    background: #222831;
+    color: #f1f1f1;
+    border-bottom: 1px solid #444;
+}
+.w3-table th {
+    background: #393e46;
+    color: #00adb5;
+    border-bottom: 2px solid #00adb5;
+}
+</style>
+
 <!--
     ==========================================================================
     Page Title and Refresh Button
@@ -41,29 +84,26 @@
     - Alert message
     ==========================================================================
 -->
-<div class="w3-container w3-card w3-padding-16">
-    <table class="w3-table w3-striped">
-        <tr>
-            <th>Time</th>
-            <th>Source</th>
-            <th>Type</th>
-            <th>Message</th>
-        </tr>
+<div class="w3-container w3-padding-16" style="width:90vw; max-width:1600px; margin:0 auto; overflow-x:auto;">
+    <table class="w3-table w3-striped" style="table-layout: auto; width: 100%;">
+        <thead>
+            <tr>
+                <th style="white-space:nowrap;">Time</th>
+                <th style="white-space:nowrap;">Source</th>
+                <th style="white-space:nowrap;">Type</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
         {% for alert in alerts %}
-        <tr>
-            <!-- Timestamp -->
-            <td>{{ alert[0] }}</td>
-
-            <!-- Source -->
-            <td>{{ alert[1] }}</td>
-
-            <!-- Type -->
-            <td>{{ alert[2] }}</td>
-
-            <!-- Message -->
-            <td>{{ alert[3] }}</td>
-        </tr>
+            <tr>
+                <td style="white-space:nowrap;">{{ alert[0] }}</td>
+                <td style="white-space:nowrap;">{{ alert[1] }}</td>
+                <td style="white-space:nowrap;">{{ alert[2] }}</td>
+                <td style="white-space:normal; overflow-wrap:break-word; word-break:break-all;">{{ alert[3] }}</td>
+            </tr>
         {% endfor %}
+        </tbody>
     </table>
 </div>
 
