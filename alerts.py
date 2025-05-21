@@ -179,24 +179,40 @@ class AlertLogger:
             conn.commit()
 
     def purge_old_alerts(
-        self
+        self,
+        limit: int = 10000,
     ) -> None:
         '''
         Purges alerts older than 24 hours from the database.
 
         Parameters:
-            None
+            limit (int): The maximum number of alerts to keep.
+                Default is 10000.
 
         Returns:
             None
         '''
 
+        # Purge old alerts older than 24 hours
         with sqlite3.connect(self.db_path) as conn:
             c = conn.cursor()
             c.execute("""
                 DELETE FROM alerts
                 WHERE timestamp < datetime('now', '-24 hours')
             """)
+            conn.commit()
+
+        # Purge old alerts if the limit is reached
+        with sqlite3.connect(self.db_path) as conn:
+            c = conn.cursor()
+            c.execute("""
+                DELETE FROM alerts
+                WHERE id NOT IN (
+                    SELECT id FROM alerts
+                    ORDER BY timestamp DESC
+                    LIMIT ?
+                )
+            """, (limit,))
             conn.commit()
 
     def get_recent_alerts(
