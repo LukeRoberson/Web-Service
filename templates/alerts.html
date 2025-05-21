@@ -13,6 +13,50 @@
 
 <!--
     ==========================================================================
+    Java Script
+    --------------------------------------------------------------------------
+    - Auto-refresh toggle
+    - If checked, the page will auto-refresh every 10 seconds
+    ==========================================================================
+-->
+<script>
+let autoRefreshInterval = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('autoRefreshToggle');
+    // Optional: Remember toggle state across reloads
+    if (localStorage.getItem('autoRefresh') === 'on') {
+        toggle.checked = true;
+        startAutoRefresh();
+    }
+    toggle.addEventListener('change', function() {
+        if (toggle.checked) {
+            localStorage.setItem('autoRefresh', 'on');
+            startAutoRefresh();
+        } else {
+            localStorage.setItem('autoRefresh', 'off');
+            stopAutoRefresh();
+        }
+    });
+});
+
+function startAutoRefresh() {
+    stopAutoRefresh();
+    autoRefreshInterval = setInterval(function() {
+        location.reload();
+    }, 10000); // 10 seconds
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    }
+}
+</script>
+
+<!--
+    ==========================================================================
     CSS Styles
     --------------------------------------------------------------------------
     Main
@@ -68,10 +112,16 @@ main {
         <h1 style="margin: 0; text-align: left;">Live Alerts</h1>
         
         <!-- Refresh Button -->
-        <i class="fa fa-refresh"
-           style="color:green; font-size:24px; cursor:pointer; text-align: right;"
-           onclick="location.reload();"
-           title="Refresh"></i>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <i class="fa fa-refresh"
+            style="color:green; font-size:24px; cursor:pointer; text-align: right;"
+            onclick="location.reload();"
+            title="Refresh"></i>
+            <label style="display: flex; align-items: center; font-size: 15px; margin-left: 12px;">
+                <input type="checkbox" id="autoRefreshToggle" style="margin-right: 6px;">
+                Auto-refresh
+            </label>
+        </div>    
     </div>
 </div>
 
