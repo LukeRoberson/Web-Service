@@ -15,7 +15,7 @@ from colorama import Fore, Style
 import requests
 import os
 
-from config import PluginConfig
+from config import PluginConfig, GlobalConfig
 from alerts import AlertLogger
 
 
@@ -24,6 +24,11 @@ app = Flask(__name__)
 
 # Initialise the logging module
 logger = AlertLogger()
+
+# Load the configuration
+print(Fore.YELLOW + "Loading configuration..." + Style.RESET_ALL)
+app_config = GlobalConfig()
+app_config.load_config()
 
 # Load the plugin configuration
 print()
@@ -85,7 +90,8 @@ for plugin in plugin_list:
 def config():
     return render_template(
         'config.html',
-        title="Config"
+        title="Config",
+        config=app_config.config,
     )
 
 
@@ -171,6 +177,49 @@ def api_plugins():
     # DELETE is used to remove a plugin
     elif request.method == 'DELETE':
         result = plugin_list.delete(data['name'])
+
+    # If this failed...
+    if not result:
+        return flask.jsonify(
+            {
+                'result': 'error',
+                'message': 'Failed to update configuration'
+            }
+        )
+
+    # If successful, recycle the workers to apply the changes
+    with open('/app/reload.txt', 'a'):
+        os.utime('/app/reload.txt', None)
+
+    return flask.jsonify(
+        {
+            'result': 'success'
+        }
+    )
+
+
+@app.route(
+    '/api/config',
+    methods=['PATCH']
+)
+def api_config():
+    """
+    API endpoint to manage global configuration.
+    Called by the UI when changes are made.
+
+    Returns:
+        JSON response indicating success.
+    """
+
+    # The body of the request
+    data = request.json
+
+    # Refresh the plugin list
+    app_config.load_config()
+
+    # PATCH is used to update config
+    if request.method == 'PATCH':
+        result = app_config.update_config(data)
 
     # If this failed...
     if not result:

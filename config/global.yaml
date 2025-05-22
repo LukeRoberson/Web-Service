@@ -1,54 +1,26 @@
-#
-# Manage configuration for the application
-#
-
-# General Azure details
-azure:
-  tenant-id: "your-tenant-id"
-
-
-# Azure details relating to authentication specificaly
 authentication:
-  app-id: "Azure App ID"
-
-  # Encrypted secret and salt for the app
-  app-secret: "Azure App Secret"
-  salt: "Randomly generated salt"
-  
-  redirect-uri: "https://your-redirect-uri"
-  admin-group: "Azure AD group for admin users"
-
-
-# Azure details relating to Teams specifically
-teams:
-  app-id: "Azure App ID for Teams"
-  
-  # Encrypted secret and salt for the app
-  app-secret: "Azure App Secret for Teams"
-  salt: "Randomly generated salt for Teams"
-  
-  base-url: "https://your-teams-base-url"
-  
-  # The user name and ID for the Teams bot
-  user: "Azure AD user for Teams"
-  user-id: "Azure AD user ID for Teams"
-  
-  # Public/private key pair used for sending/receiving teams messages
-  public-key: "Public key file for Teams"
-  private-key: "Private key file for Teams"
-
-
-# SQL server details
+  admin-group: Azure AD group for admin users
+  app-id: Azure App ID
+  app-secret: Azure App Secret
+  redirect-uri: https://your-redirect-uri
+  salt: Randomly generated salt
+azure:
+  tenant-id: your-tenant-id-test
 sql:
-  server: "your-sql-server"
+  database: your-database
+  password: your-password
   port: 1433
-  database: "your-database"
-  username: "your-username"
-  
-  # Encrypted password and salt for the SQL server
-  password: "your-password"
-  salt: "Randomly generated salt for SQL"
-
-# Settings for the web application service
+  salt: Randomly generated salt for SQL
+  server: your-sql-server
+  username: your-username
+teams:
+  app-id: Azure App ID for Teams
+  app-secret: Azure App Secret for Teams
+  base-url: https://your-teams-base-url
+  private-key: Private key file for Teams
+  public-key: Public key file for Teams
+  salt: Randomly generated salt for Teams
+  user: Azure AD user for Teams
+  user-id: Azure AD user ID for Teams
 web:
   debug: true

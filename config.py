@@ -8,6 +8,317 @@ Usage:
 import yaml
 from colorama import Fore, Style
 import urllib.parse
+from typing import Any
+
+
+class GlobalConfig:
+    '''
+    GlobalConfig class
+    Reads global configuration from a YAML file
+    Stores the values in instance variables
+
+    Methods:
+        __init__(file_path):
+            Initializes the GlobalConfig object.
+
+        __getitem__(key):
+            Magic method to get an item from the config dictionary.
+
+        __setitem__(key, value):
+            Magic method to set an item in the config dictionary.
+
+        __repr__():
+            Magic method to represent the GlobalConfig object as a string.
+
+        __str__():
+            Magic method to convert the GlobalConfig object to a string.
+
+        _validate_sections(config, section_requirements):
+            Validate required sections and keys in the config.
+
+        load_config():
+            Loads the configuration from the YAML file.
+    '''
+
+    def __init__(
+        self,
+        file_name="config/global.yaml",
+    ) -> None:
+        '''
+        Class constructor
+        Prepares variables
+
+        Args:
+            file_path (str): Path to the YAML configuration file.
+        '''
+
+        # Prepare the config
+        self.config_file = file_name
+        self.config = {}
+
+    def __getitem__(
+        self,
+        key: str
+    ) -> Any:
+        '''
+        Magic method to get an item from the config dictionary.
+
+        Args:
+            key (str): Key of the item to be retrieved.
+
+        Returns:
+            Any: The value associated with the specified key.
+        '''
+
+        return self.config[key]
+
+    def __setitem__(
+        self,
+        key: str,
+        value: Any,
+    ) -> None:
+        '''
+        Magic method to set an item in the config dictionary.
+
+        Args:
+            key (str): Key of the item to be set.
+            value (Any): Value to be set for the specified key.
+        '''
+
+        self.config[key] = value
+
+    def __repr__(
+        self
+    ) -> str:
+        '''
+        Magic method to represent the GlobalConfig object as a string.
+
+        Returns:
+            str: String representation of the GlobalConfig object.
+        '''
+
+        return f"<GlobalConfig sections={list(self.config.keys())}>"
+
+    def __str__(
+        self
+    ) -> str:
+        '''
+        Magic method to convert the GlobalConfig object to a string.
+
+                Returns:
+            str: String representation of the GlobalConfig object.
+        '''
+
+        return str(self.config)
+
+    def _validate_sections(
+        self,
+        config: dict,
+        section_requirements: dict,
+    ) -> None:
+        """
+        Helper function to validate required sections and keys in the config.
+
+        Args:
+            config (dict): The loaded configuration dictionary.
+            section_requirements (dict): Keys are section names,
+                values are lists of required keys.
+
+        Raises:
+            ValueError: If a required section or key is missing.
+        """
+
+        # Check for required sections and keys
+        for section, required_keys in section_requirements.items():
+            # Check if the section exists in the config
+            if section not in config:
+                print(
+                    Fore.RED,
+                    f"Missing '{section}' in configuration.",
+                    Style.RESET_ALL
+                )
+                raise ValueError(
+                    f"Missing '{section}' in configuration."
+                )
+
+            # Check if the required keys exist in the section
+            if required_keys:
+                for key in required_keys:
+                    if key not in config[section]:
+                        print(
+                            Fore.RED,
+                            f"Missing '{key}' in '{section}' section.",
+                            Style.RESET_ALL
+                        )
+                        raise ValueError(
+                            f"Missing '{key}' in '{section}' section."
+                        )
+
+    def load_config(
+        self,
+    ) -> None:
+        '''
+        Loads the configuration from the YAML file.
+
+        Reads the YAML file and initializes the instance variables.
+        A list of dictionaries is created from the YAML file
+            and stored in the instance variable `self.config`.
+        Validates the config by checking for required sections and keys.
+
+        Raises:
+            ValueError: If a required section or key is missing.
+        '''
+
+        # Read the YAML file
+        with open(self.config_file, "r", encoding="utf-8") as f:
+            self.config = yaml.safe_load(f)
+
+        # Define required sections and their required keys
+        section_requirements = {
+            "azure": ["tenant-id"],
+            "authentication": [
+                "app-id", "app-secret", "salt", "redirect-uri", "admin-group"
+            ],
+            "teams": [
+                "app-id", "app-secret", "salt", "base-url", "user",
+                "user-id", "public-key", "private-key"
+            ],
+            "sql": [
+                "server", "port", "database", "username", "password", "salt"
+            ],
+            "web": ["debug"]
+        }
+
+        # Validate the config
+        self._validate_sections(self.config, section_requirements)
+
+    def update_config(
+        self,
+        config: dict,
+    ) -> bool:
+        '''
+        Updates the configuration with a new dictionary.
+        Only the main section is passed from the UI.
+
+        Args:
+            config (dict): New configuration to be set.
+
+        Returns:
+            bool: True if the config updated successfully, False otherwise.
+        '''
+
+        print(
+            Fore.YELLOW,
+            f"DEBUG: Saving global config:\n{config}",
+            Style.RESET_ALL
+        )
+
+        # Azure Section
+        if config['category'] == "azure":
+            self.config['azure']['tenant-id'] = (
+                config['tenant_id']
+            )
+
+        # Authentication Section
+        elif config['category'] == "authentication":
+            self.config['authentication']['app-id'] = (
+                config['auth_app_id']
+            )
+            self.config['authentication']['app-secret'] = (
+                config['auth_app_secret']
+            )
+            self.config['authentication']['salt'] = (
+                config['auth_salt']
+            )
+            self.config['authentication']['redirect-uri'] = (
+                config['auth_redirect_uri']
+            )
+            self.config['authentication']['admin-group'] = (
+                config['auth_admin_group']
+            )
+
+        # Teams Section
+        elif config['category'] == "teams":
+            self.config['teams']['app-id'] = (
+                config['teams_app_id']
+            )
+            self.config['teams']['app-secret'] = (
+                config['teams_app_secret']
+            )
+            self.config['teams']['salt'] = (
+                config['teams_salt']
+            )
+            self.config['teams']['base-url'] = (
+                config['teams_base_url']
+            )
+            self.config['teams']['user'] = (
+                config['teams_user_name']
+            )
+            self.config['teams']['user-id'] = (
+                config['teams_user_id']
+            )
+            self.config['teams']['public-key'] = (
+                config['teams_public_key']
+            )
+            self.config['teams']['private-key'] = (
+                config['teams_private_key']
+            )
+
+        # SQL Section
+        elif config['category'] == "sql":
+            self.config['sql']['server'] = (
+                config['sql_server']
+            )
+            self.config['sql']['port'] = (
+                config['sql_port']
+            )
+            self.config['sql']['database'] = (
+                config['sql_database']
+            )
+            self.config['sql']['username'] = (
+                config['sql_username']
+            )
+            self.config['sql']['password'] = (
+                config['sql_password']
+            )
+            self.config['sql']['salt'] = (
+                config['sql_salt']
+            )
+
+        # Web Section
+        elif config['category'] == "web":
+            self.config['web']['debug'] = (
+                config['web_debug']
+            )
+
+        # If the category is not recognized, return False
+        else:
+            print(
+                Fore.RED,
+                f"DEBUG: Invalid category: {config['category']}",
+                Style.RESET_ALL
+            )
+            return False
+
+        # Save the updated config back to the YAML file
+        try:
+            with open(self.config_file, "w", encoding="utf-8") as f:
+                yaml.dump(
+                    self.config,
+                    f,
+                    default_flow_style=False,
+                    allow_unicode=True
+                )
+
+        except Exception as e:
+            print(
+                Fore.RED,
+                f"DEBUG: Failed to save config: {e}",
+                Style.RESET_ALL
+            )
+            return False
+
+        return True
 
 
 class PluginConfig:
