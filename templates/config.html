@@ -19,59 +19,17 @@
 
 {% block content %}
 
-<script>
-function saveConfig(formId) {
-    const form = document.getElementById(formId);
-    const formData = new FormData(form);
-    const data = {};
+<!--
+    ==========================================================================
+    Scripts
+    --------------------------------------------------------------------------
+    saveconfig.js:
+        - Collects configuration data from the form
+        - Sends the data to the web interface
+    ==========================================================================
+-->
+<script src="{{ url_for('static', filename='js/saveconfig.js') }}"></script>
 
-    let category = "";
-    if (formId === "azure-form") {
-        category = "azure";
-    } else if (formId === "auth-form") {
-        category = "authentication";
-    } else if (formId === "teams-form") {
-        category = "teams";
-    } else if (formId === "sql-form") {
-        category = "sql";
-    } else if (formId === "web-form") {
-        category = "web";
-    }
-
-    // Convert FormData to a plain object
-    formData.forEach((value, key) => {
-        // For checkboxes, set true/false
-        const input = form.elements[key];
-        if (input && input.type === "checkbox") {
-            data[key] = input.checked;
-        } else {
-            data[key] = value;
-        }
-    });
-    data.category = category;
-
-    // Explicitly set web_debug (even if unchecked)
-    if (formId === "web-form") {
-        const debugCheckbox = form.elements['web_debug'];
-        data['web_debug'] = debugCheckbox ? debugCheckbox.checked : false;
-    }
-
-    fetch('/api/config', {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (response.ok) {
-            alert('Configuration saved!');
-        } else {
-            alert('Failed to save configuration.');
-        }
-    });
-}
-</script>
 
 <h1>Configuration</h1>
 </br>

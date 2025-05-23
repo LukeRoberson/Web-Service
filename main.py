@@ -86,6 +86,16 @@ for plugin in plugin_list:
     )
 
 
+@app.route('/')
+def index():
+    '''
+    Just so a home page exists.
+    Some external security services require a home page to be present.
+    '''
+
+    return "I'd like to speak to the manager!"
+
+
 @app.route('/config')
 def config():
     return render_template(
@@ -199,49 +209,81 @@ def api_plugins():
 
 
 @app.route(
+    '/api/test',
+    methods=['GET']
+)
+def api_test():
+    '''
+    API endpoint to test the web service.
+    Called by health checks to verify the service is running.
+    '''
+
+    return '', 200
+
+
+@app.route(
     '/api/config',
-    methods=['PATCH']
+    methods=['GET', 'PATCH']
 )
 def api_config():
     """
     API endpoint to manage global configuration.
-    Called by the UI when changes are made.
+        GET - Called by a module to get the current configuration.
+        PATCH - Called by the UI when changes are made.
 
     Returns:
         JSON response indicating success.
     """
+    print(
+        Fore.YELLOW,
+        "DEBUG: Global config requested through API",
+        f"Method: {request.method}",
+        Style.RESET_ALL
+    )
 
-    # The body of the request
-    data = request.json
-
-    # Refresh the plugin list
+    # Refresh the configuration
     app_config.load_config()
 
-    # PATCH is used to update config
-    if request.method == 'PATCH':
-        result = app_config.update_config(data)
-
-    # If this failed...
-    if not result:
+    # GET is used to get the current configuration
+    if request.method == 'GET':
         return flask.jsonify(
             {
-                'result': 'error',
-                'message': 'Failed to update configuration'
+                'result': 'success',
+                'config': app_config.config
             }
         )
 
-    # If successful, recycle the workers to apply the changes
-    with open('/app/reload.txt', 'a'):
-        os.utime('/app/reload.txt', None)
+    # PATCH is used to update config
+    if request.method == 'PATCH':
+        # The body of the request
+        data = request.json
 
-    return flask.jsonify(
-        {
-            'result': 'success'
-        }
-    )
+        result = app_config.update_config(data)
+
+        # If this failed...
+        if not result:
+            return flask.jsonify(
+                {
+                    'result': 'error',
+                    'message': 'Failed to update configuration'
+                }
+            )
+
+        # If successful, recycle the workers to apply the changes
+        with open('/app/reload.txt', 'a'):
+            os.utime('/app/reload.txt', None)
+
+        return flask.jsonify(
+            {
+                'result': 'success'
+            }
+        )
 
 
-@app.route('/api/webhook', methods=['POST'])
+@app.route(
+    '/api/webhook',
+    methods=['POST']
+)
 def api_webhook():
     """
     API endpoint to receive webhooks from plugins.
