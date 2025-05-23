@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-
-
+    <!--
+        ==========================================================================
+        Meta and Title
+        --------------------------------------------------------------------------
+        - Set character encoding
+        - Set page title (dynamic via Jinja2)
+        - Link to external stylesheets
+        ==========================================================================
+    -->
     <head>
-        <!--
-            ==========================================================================
-            Meta and Title
-            --------------------------------------------------------------------------
-            - Set character encoding
-            - Set page title (dynamic via Jinja2)
-            - Link to external stylesheets
-            ==========================================================================
-        -->
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         
@@ -28,22 +26,51 @@
     </head>
 
 
+    <!--
+        ==========================================================================
+        Scripts
+        --------------------------------------------------------------------------
+        dark.js:
+            - Enabled dark mode toggle
+        ==========================================================================
+    -->
+    <script src="{{ url_for('static', filename='js/dark.js') }}"></script>
+
+
+    <!--
+        ==========================================================================
+        Main body area
+        ==========================================================================
+    -->
     <body>
         <!--
             ==========================================================================
             Header and Navigation
             --------------------------------------------------------------------------
             - Contains navigation bar with links to all main pages
+            - Dark mode toggle switch
             ==========================================================================
         -->
         <header>
-            <nav>
-                <ul>
+            <!-- Nav bar -->
+            <nav style="display: flex; align-items: center;">
+                <!-- Flexible, to get the menu in the centre, and slider in the right -->
+                <div style="flex:1"></div>
+                
+                <!-- Menu items, centred in the nav bar -->
+                <ul style="display: flex; gap: 1em; margin: 0 auto; padding: 0; list-style: none;">
                     <li><a href="{{ url_for('config') }}">Config</a></li>
                     <li><a href="{{ url_for('about') }}">About</a></li>
                     <li><a href="{{ url_for('alerts') }}">Alerts</a></li>
                     <li><a href="{{ url_for('plugins') }}">Plugins</a></li>
                 </ul>
+
+                <!-- Dark mode slider -->
+                <div style="flex:1"></div>
+                <label class="switch" style="margin-right: 1em;">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider round"></span>
+                </label>
             </nav>
         </header>
 
