@@ -8,12 +8,23 @@ Example:
     $ python main.py
 """
 
-from flask import Flask, render_template, request
-import flask
+from flask import (
+    Flask,
+    render_template,
+    request,
+    session,
+    redirect,
+    jsonify
+)
+from flask import __version__ as flask_version
+from flask_session import Session
+from itsdangerous import URLSafeTimedSerializer
 import sys
 from colorama import Fore, Style
 import requests
 import os
+from functools import wraps
+from typing import Optional
 
 from config import PluginConfig, GlobalConfig
 from alerts import AlertLogger
@@ -21,6 +32,9 @@ from alerts import AlertLogger
 
 # Create the Flask application
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('api_master_pw')
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
 
 # Initialise the logging module
 logger = AlertLogger()
@@ -42,6 +56,45 @@ print(Fore.YELLOW + "Loaded plugins:" + Style.RESET_ALL)
 for plugin in plugin_list:
     print("  ", plugin['name'])
 print()
+
+
+def verify_auth_token(
+    token: str,
+    secret_key: str,
+    max_age: int = 3600
+) -> Optional[str]:
+    '''
+    Verify the authentication token.
+
+    Uses a serializer from the itsdangerous library to verify the token.
+
+    Args:
+        token (str): The token to verify.
+        secret_key (str): The secret key used to sign the token.
+        max_age (int): The maximum age of the token in seconds.
+
+    Returns:
+        Optional[str]: The user associated with the token if valid,
+    '''
+
+    # Create the serializer
+    serializer = URLSafeTimedSerializer(secret_key)
+
+    # Try to load the token
+    try:
+        data = serializer.loads(token, max_age=max_age)
+
+        # If the token is valid, return the user
+        return data['user']
+
+    # If there's a bad signature or the token is expired, return None
+    except Exception:
+        print(
+            Fore.YELLOW,
+            "DEBUG: Invalid or expired token",
+            Style.RESET_ALL
+        )
+        return None
 
 
 # Function Factory - Function to create a function
@@ -66,6 +119,57 @@ def make_dynamic_webhook_handler(plugin_name, ip_list):
         )
 
     return handle_dynamic_webhook
+
+
+def protected(f):
+    '''
+    Decorator to protect a route with authentication.
+    Checks if the user is logged in and has admin permissions.
+
+    Uses a local session for user information.
+        If the user is not in the session, it checks for a
+            token in the request.
+        If a token is found, it verifies the token and stores
+            the user in the session.
+        If the user is not authenticated, it redirects to the auth page.
+    '''
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Check if there's a token in the request
+        token = request.args.get('token')
+
+        # User is providing a token, but is not in the session yet
+        #   They have authenticated and been given a token
+        #   Verify that the token is valid
+        if 'user' not in session and token:
+            # Verify the token
+            user = verify_auth_token(token, app.config['SECRET_KEY'])
+
+            # If the token is valid, store the user in the session
+            if user:
+                session['user'] = user
+
+            # If token validation failed
+            else:
+                return jsonify(
+                    {
+                        'result': 'error',
+                        'message': 'Invalid token'
+                    }
+                )
+
+        # User is not authenticated
+        #   Neither in the session nor providing a token
+        elif "user" not in session:
+            return redirect(
+                f"/auth?redirect={request.url}"
+            )
+
+        # User is already authenticated (user is in the session)
+        return f(*args, **kwargs)
+
+    return decorated_function
 
 
 # Dynamically register routes for each plugin
@@ -97,6 +201,7 @@ def index():
 
 
 @app.route('/config')
+@protected
 def config():
     return render_template(
         'config.html',
@@ -106,17 +211,19 @@ def config():
 
 
 @app.route('/about')
+@protected
 def about():
     return render_template(
         'about.html',
         title="About",
-        flask_version=flask.__version__,
+        flask_version=flask_version,
         python_version=sys.version,
         debug_mode=app.debug
     )
 
 
 @app.route('/alerts')
+@protected
 def alerts():
     '''
     Route to display the alerts page.
@@ -134,6 +241,7 @@ def alerts():
 
 
 @app.route('/plugins')
+@protected
 def plugins():
     # Refresh the plugin list
     plugin_list.load_config()
@@ -190,7 +298,7 @@ def api_plugins():
 
     # If this failed...
     if not result:
-        return flask.jsonify(
+        return jsonify(
             {
                 'result': 'error',
                 'message': 'Failed to update configuration'
@@ -201,7 +309,7 @@ def api_plugins():
     with open('/app/reload.txt', 'a'):
         os.utime('/app/reload.txt', None)
 
-    return flask.jsonify(
+    return jsonify(
         {
             'result': 'success'
         }
@@ -246,7 +354,7 @@ def api_config():
 
     # GET is used to get the current configuration
     if request.method == 'GET':
-        return flask.jsonify(
+        return jsonify(
             {
                 'result': 'success',
                 'config': app_config.config
@@ -262,7 +370,7 @@ def api_config():
 
         # If this failed...
         if not result:
-            return flask.jsonify(
+            return jsonify(
                 {
                     'result': 'error',
                     'message': 'Failed to update configuration'
@@ -273,7 +381,7 @@ def api_config():
         with open('/app/reload.txt', 'a'):
             os.utime('/app/reload.txt', None)
 
-        return flask.jsonify(
+        return jsonify(
             {
                 'result': 'success'
             }
@@ -313,7 +421,7 @@ def api_webhook():
     logger.purge_old_alerts()
 
     # Return a success response
-    return flask.jsonify(
+    return jsonify(
         {
             'result': 'success'
         }
