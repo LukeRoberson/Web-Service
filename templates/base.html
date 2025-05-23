@@ -13,7 +13,10 @@
             ==========================================================================
         -->
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
         <title>{{ title or "Chat Bot Web Service" }}</title>
+        
         <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
@@ -53,7 +56,8 @@
             ==========================================================================
         -->
         <main>
-            {% block content %}{% endblock %}
+            {% block content %}
+            {% endblock %}
         </main>
     </body>
 

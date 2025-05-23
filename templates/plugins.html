@@ -35,7 +35,7 @@
     Future: Open a modal to register a new plugin
     ==========================================================================
 -->
-<div class="container w3-padding-32">
+<div class="container w3-responsive w3-padding-32">
     <h4>Register a new plugin</h4>
     <button class="w3-button w3-green" onclick="document.getElementById('modal-register').style.display='block'">Register</button>
 </div>
@@ -44,7 +44,7 @@
     Modal for adding a new plugin
     Reamins hidden until the Register button is clicked
 -->
-<div id="modal-register" class="w3-modal" style="display:none;">
+<div id="modal-register" class="w3-modal w3-responsive" style="display:none;">
   <div class="w3-modal-content w3-animate-top w3-card-4">
     
     <!-- Modal heading -->
@@ -106,12 +106,12 @@
     ==========================================================================
 -->
 <hr>
-<div class="container">
+<div class="container w3-responsive">
     <h4>Registered plugins</h4>
 </div>
 
 {% for plugin in plugins %}
-<div class="w3-card-4">
+<div class="w3-card-4 w3-responsive">
     <!-- Plugin Name as a header -->
     <header class="w3-container w3-light-grey">
         <h4>{{ plugin.name }}</h4>
@@ -145,7 +145,7 @@
     Modal for configuring the plugin
     Reamins hidden until the Configure button is clicked
 -->
-<div id="modal-{{ loop.index }}" class="w3-modal" style="display:none;">
+<div id="modal-{{ loop.index }}" class="w3-modal w3-responsive" style="display:none;">
   <div class="w3-modal-content w3-animate-top w3-card-4">
     
     <!-- Modal heading -->
