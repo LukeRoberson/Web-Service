@@ -34,19 +34,21 @@ function updatePlugin(index) {
         method: 'PATCH',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
-    }).then(response => response.json())
+    })
     
     // Handle the response
-    .then(result => {
-        if (result.result === 'success') {
-            alert('Saved!');
+    .then(response => {
+        showConfigMessage(
+            response.ok ? 'Plugin updated!' : 'Update failed.',
+            response.ok ? 'success' : 'fail'
+        );
+
+        // Close modal and reload the page to reflect changes
+        // Wait for message to fade out before reloading
+        setTimeout(() => {
             modal.style.display = 'none';
-            
-            // Reload the page to reflect changes
             location.reload();
-        } else {
-            alert('Save failed!');
-        }
+        }, 2600);
     });
 }
 
@@ -74,19 +76,21 @@ function registerPlugin() {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
-    }).then(response => response.json())
+    })
     
     // Handle the response
-    .then(result => {
-        if (result.result === 'success') {
-            alert('Saved!');
+    .then(response => {
+        showConfigMessage(
+            response.ok ? 'Plugin added!' : 'Failed to add plugin.',
+            response.ok ? 'success' : 'fail'
+        );
+
+        // Close modal and reload the page to reflect changes
+        // Wait for message to fade out before reloading
+        setTimeout(() => {
             modal.style.display = 'none';
-            
-            // Reload the page to reflect changes
             location.reload();
-        } else {
-            alert('Save failed!');
-        }
+        }, 2600);
     });
 }
 
@@ -107,17 +111,47 @@ function deletePlugin(name) {
         method: 'DELETE',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
-    }).then(response => response.json())
+    })
     
     // Handle the response
-    .then(result => {
-        if (result.result === 'success') {
-            alert('Deleted!');
-            
-            // Reload the page to reflect changes
+    .then(response => {
+        showConfigMessage(
+            response.ok ? 'Deleted!' : 'Failed to delete.',
+            response.ok ? 'success' : 'fail'
+        );
+
+        // Close modal and reload the page to reflect changes
+        // Wait for message to fade out before reloading
+        setTimeout(() => {
             location.reload();
-        } else {
-            alert('Delete failed!');
-        }
+        }, 2600);
     });
+}
+
+
+/**
+ * Displays a message to the user indicating success or failure of the save operation.
+ * 
+ * @param {string} message - The message to display.
+ * @param {string} type - The type of message ('success' or 'fail').
+ */
+function showConfigMessage(message, type) {
+    const msgDiv = document.getElementById('config-message');
+    
+    msgDiv.textContent = message;
+    msgDiv.style.display = 'block';
+    msgDiv.style.background = type === 'success' ? '#4CAF50' : '#f44336'; // green or red
+    msgDiv.style.color = '#fff';
+    msgDiv.style.opacity = '1';
+    msgDiv.style.transition = 'opacity 0.8s';
+
+    /* Display the message for 2 seconds, then fade out */
+    setTimeout(() => {
+        msgDiv.style.opacity = '0';
+    }, 1800);
+
+    setTimeout(() => {
+        msgDiv.style.display = 'none';
+        msgDiv.style.opacity = '1';
+    }, 2600);
 }
