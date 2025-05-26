@@ -28,13 +28,8 @@ from typing import Optional
 
 from config import PluginConfig, GlobalConfig
 from alerts import AlertLogger
+from api import web_api
 
-
-# Create the Flask application
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('api_master_pw')
-app.config['SESSION_TYPE'] = 'filesystem'
-Session(app)
 
 # Initialise the logging module
 logger = AlertLogger()
@@ -56,6 +51,18 @@ print(Fore.YELLOW + "Loaded plugins:" + Style.RESET_ALL)
 for plugin in plugin_list:
     print("  ", plugin['name'])
 print()
+
+# Create the Flask application
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('api_master_pw')
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['GLOBAL_CONFIG'] = app_config
+app.config['PLUGIN_LIST'] = plugin_list
+app.config['LOGGER'] = logger
+Session(app)
+
+# Register API blueprint
+app.register_blueprint(web_api)
 
 
 def verify_auth_token(
@@ -262,169 +269,6 @@ def plugins():
         'plugins.html',
         title="Plugins",
         plugins=plugin_list.config,
-    )
-
-
-@app.route(
-    '/api/plugins',
-    methods=['POST', 'PATCH', 'DELETE']
-)
-def api_plugins():
-    """
-    API endpoint to manage plugins.
-    Called by the UI when changes are made.
-
-    Returns:
-        JSON response indicating success.
-    """
-
-    # The body of the request
-    data = request.json
-
-    # Refresh the plugin list
-    plugin_list.load_config()
-
-    # POST is used to add a new plugin
-    if request.method == 'POST':
-        result = plugin_list.register(data)
-
-    # PATCH is used to update an existing plugin
-    elif request.method == 'PATCH':
-        result = plugin_list.update_config(data)
-
-    # DELETE is used to remove a plugin
-    elif request.method == 'DELETE':
-        result = plugin_list.delete(data['name'])
-
-    # If this failed...
-    if not result:
-        return jsonify(
-            {
-                'result': 'error',
-                'message': 'Failed to update configuration'
-            }
-        )
-
-    # If successful, recycle the workers to apply the changes
-    with open('/app/reload.txt', 'a'):
-        os.utime('/app/reload.txt', None)
-
-    return jsonify(
-        {
-            'result': 'success'
-        }
-    )
-
-
-@app.route(
-    '/api/test',
-    methods=['GET']
-)
-def api_test():
-    '''
-    API endpoint to test the web service.
-    Called by health checks to verify the service is running.
-    '''
-
-    return '', 200
-
-
-@app.route(
-    '/api/config',
-    methods=['GET', 'PATCH']
-)
-def api_config():
-    """
-    API endpoint to manage global configuration.
-        GET - Called by a module to get the current configuration.
-        PATCH - Called by the UI when changes are made.
-
-    Returns:
-        JSON response indicating success.
-    """
-    print(
-        Fore.YELLOW,
-        "DEBUG: Global config requested through API",
-        f"Method: {request.method}",
-        Style.RESET_ALL
-    )
-
-    # Refresh the configuration
-    app_config.load_config()
-
-    # GET is used to get the current configuration
-    if request.method == 'GET':
-        return jsonify(
-            {
-                'result': 'success',
-                'config': app_config.config
-            }
-        )
-
-    # PATCH is used to update config
-    if request.method == 'PATCH':
-        # The body of the request
-        data = request.json
-
-        result = app_config.update_config(data)
-
-        # If this failed...
-        if not result:
-            return jsonify(
-                {
-                    'result': 'error',
-                    'message': 'Failed to update configuration'
-                }
-            )
-
-        # If successful, recycle the workers to apply the changes
-        with open('/app/reload.txt', 'a'):
-            os.utime('/app/reload.txt', None)
-
-        return jsonify(
-            {
-                'result': 'success'
-            }
-        )
-
-
-@app.route(
-    '/api/webhook',
-    methods=['POST']
-)
-def api_webhook():
-    """
-    API endpoint to receive webhooks from plugins.
-    POST from the plugin when a webhook is received.
-
-    Returns:
-        JSON response indicating success.
-    """
-
-    # The body of the request
-    data = request.json
-    print(
-        Fore.YELLOW,
-        "DEBUG: Received webhook:",
-        data,
-        Style.RESET_ALL
-    )
-
-    # Process the webhook data, store in the DB
-    logger.log_alert(
-        source=data['source'],
-        type=data['type'],
-        message=data['message']
-    )
-
-    # Purge old alerts
-    logger.purge_old_alerts()
-
-    # Return a success response
-    return jsonify(
-        {
-            'result': 'success'
-        }
     )
 
 
