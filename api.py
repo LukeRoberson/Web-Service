@@ -121,7 +121,7 @@ def api_config():
     logging.info("GLOBAL_CONFIG: %s", current_app.config['GLOBAL_CONFIG'])
 
     # Get the config object from the current app config
-    app_config = current_app.config['PLUGIN_LIST']
+    app_config = current_app.config['GLOBAL_CONFIG']
 
     # Refresh the configuration
     app_config.load_config()
@@ -180,7 +180,7 @@ def api_webhook():
     logging.info("Received webhook data: %s", data)
 
     # Get the logger object from the current app config
-    logger = current_app.config['ALERT_LOGGER']
+    logger = current_app.config['LOGGER']
 
     # Process the webhook data, store in the DB
     logger.log_alert(

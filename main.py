@@ -14,7 +14,7 @@ from flask import (
     request,
     session,
     redirect,
-    jsonify
+    jsonify,
 )
 from flask import __version__ as flask_version
 from flask_session import Session
@@ -56,8 +56,8 @@ print()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('api_master_pw')
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['GLOBAL_CONFIG'] = app_config
 app.config['PLUGIN_LIST'] = plugin_list
+app.config['GLOBAL_CONFIG'] = app_config
 app.config['LOGGER'] = logger
 Session(app)
 

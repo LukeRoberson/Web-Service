@@ -18,22 +18,22 @@ RUN apk add --no-cache uwsgi-python3
 # Install cURL (for health checks)
 RUN apk --no-cache add curl
 
-# Copy the rest of the application code
-COPY . .
-
 # Change ownership of the application code to the non-root user
 RUN chown -R appuser:appgroup /app
 
 # Switch to the non-root user
 USER appuser
 
+# Create a folder for config files
+RUN mkdir -p /app/config
+
 # Copy the requirements file and install dependencies
 COPY requirements.txt requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Create a folder for config files
-RUN mkdir -p /app/config
+# Copy the rest of the application code
+COPY . .
 
 # Start the application using uWSGI
 CMD ["uwsgi", "--ini", "uwsgi.ini"]
