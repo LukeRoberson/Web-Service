@@ -67,6 +67,8 @@ app.register_blueprint(web_routes)
 def make_dynamic_webhook_handler(plugin_name, ip_list):
     def handle_dynamic_webhook():
         src = request.remote_addr
+        headers = dict(request.headers)
+
         logging.info(
             f"Received webhook request for plugin '{plugin_name}' "
             f"from IP: {src}"
@@ -75,7 +77,8 @@ def make_dynamic_webhook_handler(plugin_name, ip_list):
         # Proxy the webhook request to the plugin
         response = requests.post(
             f"http://{plugin_name}:5000/webhook",
-            json=request.json
+            json=request.json,
+            headers=headers,
         )
 
         # Proxy the response back to the original request
