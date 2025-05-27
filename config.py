@@ -1,14 +1,50 @@
 """
 Module for reading and maintaining the configuration of the web service.
 
-Usage:
-    This contains classes and should not be run directly.
+Functions:
+    - validate_ip_addresses(ip_addresses: list[str]) -> bool:
+        Validates a list of IP addresses.
+
+Classes:
+    - GlobalConfig:
+        Manage global app configuration
+
+    - PluginConfig:
+        Manages plugins; Add, configure, and delete plugins
 """
 
 import yaml
 from colorama import Fore, Style
 import urllib.parse
 from typing import Any
+import logging
+import ipaddress
+
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+
+
+def validate_ip_addresses(
+    ip_addresses: list[str]
+) -> bool:
+    '''
+    Validates a list of IP addresses.
+
+    Args:
+        ip_addresses (list[str]): List of IP addresses to validate.
+
+    Returns:
+        bool: True if all IP addresses are valid, False otherwise.
+    '''
+
+    try:
+        for address in ip_addresses:
+            ipaddress.ip_address(address)
+        return True
+
+    except ValueError:
+        return False
 
 
 class GlobalConfig:
@@ -207,11 +243,7 @@ class GlobalConfig:
             bool: True if the config updated successfully, False otherwise.
         '''
 
-        print(
-            Fore.YELLOW,
-            f"DEBUG: Saving global config:\n{config}",
-            Style.RESET_ALL
-        )
+        logging.info("Saving global config: %s", config)
 
         # Azure Section
         if config['category'] == "azure":
@@ -293,10 +325,8 @@ class GlobalConfig:
 
         # If the category is not recognized, return False
         else:
-            print(
-                Fore.RED,
-                f"DEBUG: Invalid category: {config['category']}",
-                Style.RESET_ALL
+            logging.error(
+                "Config update: Invalid category: %s", config['category']
             )
             return False
 
@@ -311,11 +341,7 @@ class GlobalConfig:
                 )
 
         except Exception as e:
-            print(
-                Fore.RED,
-                f"DEBUG: Failed to save config: {e}",
-                Style.RESET_ALL
-            )
+            logging.error("Failed to save config: %s", e)
             return False
 
         return True
@@ -517,21 +543,11 @@ class PluginConfig:
         }
         '''
 
-        print(
-            Fore.YELLOW,
-            f"DEBUG: Attempting to update config: {new_config}",
-            Style.RESET_ALL
-        )
+        logging.info("Attempting to update config: %s", new_config)
 
         # Find existing entry in config
         for entry in self.config:
             if (entry['name']) == new_config['plugin_name']:
-                print(
-                    Fore.YELLOW,
-                    f"DEBUG: Found matching entry: {entry['name']}",
-                    Style.RESET_ALL
-                )
-
                 # Update the entry with new values
                 entry['name'] = (
                     new_config['name']
@@ -553,32 +569,24 @@ class PluginConfig:
                     new_config['webhook']['allowed-ip']
                 )
 
-                print(
-                    Fore.YELLOW,
-                    f"DEBUG: Updated: {entry}",
-                    Style.RESET_ALL
-                )
-
-                print(
-                    Fore.YELLOW,
-                    f"DEBUG: Current config: {self.config}",
-                    Style.RESET_ALL
-                )
+                # Validate the allowed IP addresses
+                if not validate_ip_addresses(
+                    entry['webhook']['allowed-ip']
+                ):
+                    logging.error(
+                        "Invalid IP addresses in allowed-ip: %s",
+                        entry['webhook']['allowed-ip']
+                    )
+                    return False
 
                 # Save the updated config back to the YAML file
+                logging.info("Updated entry: %s", entry)
                 with open("config/plugins.yaml", "w", encoding="utf-8") as f:
                     yaml.dump(
                         self.config,
                         f,
                         default_flow_style=False,
                         allow_unicode=True
-                    )
-
-                with open(self.plugin_file, "r", encoding="utf-8") as f:
-                    print(
-                        Fore.YELLOW,
-                        f"DEBUG: YAML: {yaml.safe_load(f)}",
-                        Style.RESET_ALL
                     )
 
                 return True
@@ -618,11 +626,21 @@ class PluginConfig:
         }
         '''
 
-        print(
-            Fore.YELLOW,
-            f"DEBUG: Attempting to register plugin: {config}",
-            Style.RESET_ALL
-        )
+        logging.info("Attempting to register plugin: %s", config)
+
+        # Check if the plugin already exists
+        for entry in self.config:
+            if entry['name'] == config['name']:
+                logging.error("Plugin '%s' already exists.", config['name'])
+                return False
+
+        # Validate the allowed IP addresses
+        if not validate_ip_addresses(config['webhook']['allowed-ip']):
+            logging.error(
+                "Invalid IP addresses in allowed-ip: %s",
+                config['webhook']['allowed-ip']
+            )
+            return False
 
         # Create a new entry
         entry = {
@@ -635,19 +653,11 @@ class PluginConfig:
             }
         }
 
-        print(
-            Fore.YELLOW,
-            f"DEBUG: Adding entry: {entry}",
-            Style.RESET_ALL
-        )
+        logging.info("New entry created: %s", entry)
 
         # Append the new entry to the existing config
         self.config.append(entry)
-        print(
-            Fore.YELLOW,
-            f"DEBUG: Current config: {self.config}",
-            Style.RESET_ALL
-        )
+        logging.info("Current config: %s", self.config)
 
         # Save the updated config back to the YAML file
         with open("config/plugins.yaml", "w", encoding="utf-8") as f:
@@ -659,11 +669,7 @@ class PluginConfig:
             )
 
         with open(self.plugin_file, "r", encoding="utf-8") as f:
-            print(
-                Fore.YELLOW,
-                f"DEBUG: YAML: {yaml.safe_load(f)}",
-                Style.RESET_ALL
-            )
+            logging.info("YAML: %s", yaml.safe_load(f))
 
         return True
 
@@ -681,29 +687,15 @@ class PluginConfig:
             bool: True if the plugin was deleted successfully, False otherwise.
         '''
 
-        print(
-            Fore.YELLOW,
-            f"DEBUG: Attempting to delete plugin: {name}",
-            Style.RESET_ALL
+        logging.warning(
+            "Attempting to delete plugin: %s", name
         )
 
         # Find and remove the entry
         for entry in self.config:
             if entry['name'] == name:
-                print(
-                    Fore.YELLOW,
-                    f"DEBUG: Found matching entry: {entry['name']}",
-                    Style.RESET_ALL
-                )
-
                 # Remove the entry from the list
                 self.config.remove(entry)
-
-                print(
-                    Fore.YELLOW,
-                    f"DEBUG: Current config: {self.config}",
-                    Style.RESET_ALL
-                )
 
                 # Save the updated config back to the YAML file
                 with open("config/plugins.yaml", "w", encoding="utf-8") as f:
@@ -714,21 +706,10 @@ class PluginConfig:
                         allow_unicode=True
                     )
 
-                with open(self.plugin_file, "r", encoding="utf-8") as f:
-                    print(
-                        Fore.YELLOW,
-                        f"DEBUG: YAML: {yaml.safe_load(f)}",
-                        Style.RESET_ALL
-                    )
-
                 return True
 
         # If no matching entry is found, return False
-        print(
-            Fore.RED,
-            f"Entry {name} not found",
-            Style.RESET_ALL
-        )
+        logging.error("Cannot delete plugin. Entry %s not found", name)
         return False
 
 

@@ -37,14 +37,20 @@ function updatePlugin(index) {
     })
     
     // Handle the response
-    .then(response => {
+    .then(response => response.json().then(json => ({
+        ok: response.ok,
+        result: json.result,
+        message: json.message || null
+    })))
+    .then(({ ok, result, message }) => {
+        const isSuccess = ok && result === 'success';
         showConfigMessage(
-            response.ok ? 'Plugin updated!' : 'Update failed.',
-            response.ok ? 'success' : 'fail'
+            isSuccess
+                ? (message || 'Plugin updated!')
+                : (message || 'Failed to update plugin.'),
+            isSuccess ? 'success' : 'fail'
         );
 
-        // Close modal and reload the page to reflect changes
-        // Wait for message to fade out before reloading
         setTimeout(() => {
             modal.style.display = 'none';
             location.reload();
@@ -79,14 +85,20 @@ function registerPlugin() {
     })
     
     // Handle the response
-    .then(response => {
+    .then(response => response.json().then(json => ({
+        ok: response.ok,
+        result: json.result,
+        message: json.message || null
+    })))
+    .then(({ ok, result, message }) => {
+        const isSuccess = ok && result === 'success';
         showConfigMessage(
-            response.ok ? 'Plugin added!' : 'Failed to add plugin.',
-            response.ok ? 'success' : 'fail'
+            isSuccess
+                ? (message || 'Plugin added!')
+                : (message || 'Failed to add plugin.'),
+            isSuccess ? 'success' : 'fail'
         );
 
-        // Close modal and reload the page to reflect changes
-        // Wait for message to fade out before reloading
         setTimeout(() => {
             modal.style.display = 'none';
             location.reload();
@@ -114,15 +126,22 @@ function deletePlugin(name) {
     })
     
     // Handle the response
-    .then(response => {
+    .then(response => response.json().then(json => ({
+        ok: response.ok,
+        result: json.result,
+        message: json.message || null
+    })))
+    .then(({ ok, result, message }) => {
+        const isSuccess = ok && result === 'success';
         showConfigMessage(
-            response.ok ? 'Deleted!' : 'Failed to delete.',
-            response.ok ? 'success' : 'fail'
+            isSuccess
+                ? (message || 'Plugin deleted!')
+                : (message || 'Failed to delete plugin.'),
+            isSuccess ? 'success' : 'fail'
         );
 
-        // Close modal and reload the page to reflect changes
-        // Wait for message to fade out before reloading
         setTimeout(() => {
+            modal.style.display = 'none';
             location.reload();
         }, 2600);
     });
