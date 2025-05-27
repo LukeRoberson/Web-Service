@@ -40,24 +40,37 @@ nav {
    Dark Mode
 ==========================================================================
 */
+html.dark-mode body,
 body.dark-mode {
     background: #181a1b;
     color: #e0e0e0;
 }
+
+html.dark-mode a
 body.dark-mode a { color: #80cbc4; }
+
+html.dark-mode .w3-container,
 body.dark-mode .w3-container,
+html.dark-mode .w3-card,
 body.dark-mode .w3-card,
+html.dark-mode .w3-table,
 body.dark-mode .w3-table {
     background: #23272a !important;
     color: #e0e0e0 !important;
 }
+
+html.dark-mode th, html.dark-mode td,
 body.dark-mode th, body.dark-mode td {
     background: #23272a !important;
     color: #e0e0e0 !important;
 }
+
+html.dark-mode nav, html.dark-mode header,
 body.dark-mode nav, body.dark-mode header {
     background: #23272a !important;
 }
+
+html.dark-mode main,
 body.dark-mode main {
     background: #23272a !important;
     color: #e0e0e0 !important;

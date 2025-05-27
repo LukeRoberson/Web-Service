@@ -15,17 +15,23 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const toggle = document.getElementById('darkModeToggle');
+    const root = document.documentElement;
+    
     // Load preference
     if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark-mode');
+        root.classList.add('dark-mode');
         toggle.checked = true;
+    } else {
+        root.classList.remove('dark-mode');
+        toggle.checked = false;
     }
+
     toggle.addEventListener('change', function() {
         if (toggle.checked) {
-            document.body.classList.add('dark-mode');
+            root.classList.add('dark-mode');
             localStorage.setItem('darkMode', 'true');
         } else {
-            document.body.classList.remove('dark-mode');
+            root.classList.remove('dark-mode');
             localStorage.setItem('darkMode', 'false');
         }
     });
