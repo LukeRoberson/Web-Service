@@ -50,6 +50,7 @@ logging.basicConfig(level=logging.INFO)
 web_routes = Blueprint(
     'web_routes',
     __name__,
+    template_folder='templates',
 )
 
 
@@ -198,7 +199,7 @@ def alerts():
     '''
 
     # Get the logger object from the current app config
-    logger = current_app.config['ALERT_LOGGER']
+    logger = current_app.config['LOGGER']
 
     # Collect a list of alerts
     alerts = logger.get_recent_alerts()
