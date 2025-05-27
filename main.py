@@ -69,6 +69,11 @@ def make_dynamic_webhook_handler(plugin_name, ip_list):
         src = request.remote_addr
         headers = dict(request.headers)
 
+        # Remove headers that requests will set automatically
+        headers.pop('Host', None)
+        headers.pop('Content-Length', None)
+        headers.pop('Transfer-Encoding', None)
+
         logging.info(
             f"Received webhook request for plugin '{plugin_name}' "
             f"from IP: {src}"
@@ -77,7 +82,7 @@ def make_dynamic_webhook_handler(plugin_name, ip_list):
         # Proxy the webhook request to the plugin
         response = requests.post(
             f"http://{plugin_name}:5000/webhook",
-            json=request.json,
+            data=request.get_data(),
             headers=headers,
         )
 
