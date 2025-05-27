@@ -10,11 +10,11 @@
         ==========================================================================
     -->
     <head>
-        <script>
-            if (localStorage.getItem('darkMode') === 'true') {
-                document.documentElement.classList.add('dark-mode');
-            }
-        </script>
+        <!--
+            This script needs to be included before the dark.js script, so it runs before CSS is applied.
+            This prevents a flash of unstyled content (FOUC) when the page loads.
+        -->
+        <script src="{{ url_for('static', filename='js/dark-head.js') }}"></script>
         
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
