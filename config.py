@@ -202,12 +202,22 @@ class GlobalConfig:
         Validates the config by checking for required sections and keys.
 
         Raises:
+            FileNotFoundError: If the configuration file is not found.
             ValueError: If a required section or key is missing.
         '''
 
         # Read the YAML file
-        with open(self.config_file, "r", encoding="utf-8") as f:
-            self.config = yaml.safe_load(f)
+        try:
+            with open(self.config_file, "r", encoding="utf-8") as f:
+                self.config = yaml.safe_load(f)
+
+        except FileNotFoundError:
+            logging.error(
+                "Configuration file not found: %s", self.config_file
+            )
+            raise FileNotFoundError(
+                f"Configuration file not found: {self.config_file}"
+            )
 
         # Define required sections and their required keys
         section_requirements = {
@@ -373,6 +383,9 @@ class PluginConfig:
         __repr__(self):
             Returns a string representation of the PluginConfig object.
 
+        _validate_plugins(self):
+            Validates that all required fields exist for each plugin.
+
         load_config(self):
             Loads the configuration from the YAML file.
 
@@ -465,6 +478,61 @@ class PluginConfig:
         '''
         return f"<PluginConfig plugins={len(self.config)}>"
 
+    def _validate_plugins(
+        self
+    ) -> None:
+        """
+        Validates that all required fields exist for each plugin.
+            If there are invalid plugins, they are removed from the config.
+            One bad config entry will not break the whole config.
+        """
+
+        required_fields = ['name', 'description', 'webhook']
+        webhook_fields = ['url', 'secret', 'allowed-ip']
+
+        valid_plugins = []
+        for idx, entry in enumerate(self.config):
+            valid = True
+            # Check top-level fields
+            for field in required_fields:
+                if field not in entry:
+                    logging.error(
+                        f"Plugin at index {idx} "
+                        f"missing required field: {field}"
+                    )
+                    valid = False
+
+            # Check webhook subfields
+            webhook = entry.get('webhook', {})
+            for field in webhook_fields:
+                if field not in webhook:
+                    logging.error(
+                        f"Plugin '{entry.get('name', '?')}' "
+                        f"missing webhook field: {field}"
+                    )
+                    valid = False
+
+            # Check allowed-ip is a list
+            if (
+                'allowed-ip' in webhook and
+                not isinstance(webhook['allowed-ip'], list)
+            ):
+                logging.error(
+                    f"Plugin '{entry.get('name', '?')}' "
+                    f"webhook.allowed-ip must be a list"
+                )
+                valid = False
+
+            if valid:
+                valid_plugins.append(entry)
+            else:
+                logging.warning(
+                    f"Removing invalid plugin entry: "
+                    f"{entry.get('name', entry)}"
+                )
+
+        self.config = valid_plugins
+
     def load_config(
         self,
     ) -> None:
@@ -476,10 +544,25 @@ class PluginConfig:
             and stored in the instance variable `self.config`.
         Creates a unique route for each plugin by combining the plugin name
             and the webhook URL.
+
+        Raises:
+            FileNotFoundError: If the configuration file is not found.
         '''
 
-        with open(self.plugin_file, "r", encoding="utf-8") as f:
-            self.config = yaml.safe_load(f)
+        try:
+            with open(self.plugin_file, "r", encoding="utf-8") as f:
+                self.config = yaml.safe_load(f)
+
+        except FileNotFoundError:
+            logging.error(
+                "Configuration file not found: %s", self.plugin_file
+            )
+            raise FileNotFoundError(
+                f"Configuration file not found: {self.plugin_file}"
+            )
+
+        # Validate the plugins
+        self._validate_plugins()
 
         '''
         Config format:
