@@ -85,7 +85,7 @@ def verify_auth_token(
 
     # If there's a bad signature or the token is expired, return None
     except Exception:
-        logging.debug("Invalid or expired token")
+        logging.warning("Invalid or expired token")
         return None
 
 

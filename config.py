@@ -498,10 +498,8 @@ class PluginConfig:
             # Check top-level fields
             for field in required_fields:
                 if field not in entry:
-                    logging.error(
-                        f"Plugin at index {idx} "
-                        f"missing required field: {field}"
-                    )
+                    logging.error("Plugin at index %s", idx)
+                    logging.error("Missing required field: %s", field)
                     valid = False
 
             # Check webhook subfields
@@ -529,7 +527,7 @@ class PluginConfig:
                 valid_plugins.append(entry)
             else:
                 logging.warning(
-                    f"Removing invalid plugin entry: "
+                    f"Removing invalid plugin entry: %s"
                     f"{entry.get('name', entry)}"
                 )
 
@@ -692,8 +690,8 @@ class PluginConfig:
                     )
                 except Exception as e:
                     logging.warning(
-                        "Failed to send startup webhook to logging service."
-                        f" Error: {e}"
+                        "Failed to send webhook to logging service. %s",
+                        e
                     )
 
                 return True
@@ -793,8 +791,8 @@ class PluginConfig:
             )
         except Exception as e:
             logging.warning(
-                "Failed to send startup webhook to logging service."
-                f" Error: {e}"
+                "Failed to send startup webhook to logging service. %s",
+                e
             )
 
         return True
@@ -814,7 +812,8 @@ class PluginConfig:
         '''
 
         logging.warning(
-            "Attempting to delete plugin: %s", name
+            "Attempting to delete plugin: %s",
+            name
         )
 
         # Find and remove the entry
@@ -850,8 +849,8 @@ class PluginConfig:
                     )
                 except Exception as e:
                     logging.warning(
-                        "Failed to send startup webhook to logging service."
-                        f" Error: {e}"
+                        "Failed to send webhook to logging service. %s",
+                        e
                     )
 
                 return True
