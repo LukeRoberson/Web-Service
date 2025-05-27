@@ -16,12 +16,16 @@ from flask_session import Session
 from colorama import Fore, Style
 import requests
 import os
+import logging
 
 from config import PluginConfig, GlobalConfig
 from alerts import AlertLogger
 from api import web_api
 from web import web_routes
 
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 # Initialise the logging module
 logger = AlertLogger()
@@ -63,8 +67,10 @@ app.register_blueprint(web_routes)
 def make_dynamic_webhook_handler(plugin_name, ip_list):
     def handle_dynamic_webhook():
         src = request.remote_addr
-        print(Fore.YELLOW, "DEBGU: Source IP:", src, Style.RESET_ALL)
-        print(Fore.YELLOW, "Allowed IPs:", ip_list, Style.RESET_ALL)
+        logging.info(
+            f"Received webhook request for plugin '{plugin_name}' "
+            f"from IP: {src}"
+        )
 
         # Proxy the webhook request to the plugin
         response = requests.post(

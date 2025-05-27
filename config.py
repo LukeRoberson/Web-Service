@@ -19,6 +19,8 @@ import urllib.parse
 from typing import Any
 import logging
 import ipaddress
+from datetime import datetime
+import requests
 
 
 # Set up logging
@@ -672,6 +674,28 @@ class PluginConfig:
                         allow_unicode=True
                     )
 
+                # Send to logging service
+                try:
+                    requests.post(
+                        "http://logging:5100/api/log",
+                        json={
+                            "source": "wen-interface",
+                            "destination": ["web"],
+                            "log": {
+                                "type": "plugin.update",
+                                "timestamp": datetime.now().isoformat(),
+                                "message": f"Plugin '{entry['name']}' "
+                                f"updated successfully."
+                            }
+                        },
+                        timeout=3
+                    )
+                except Exception as e:
+                    logging.warning(
+                        "Failed to send startup webhook to logging service."
+                        f" Error: {e}"
+                    )
+
                 return True
 
         # If no matching entry is found, return False
@@ -751,8 +775,27 @@ class PluginConfig:
                 allow_unicode=True
             )
 
-        with open(self.plugin_file, "r", encoding="utf-8") as f:
-            logging.info("YAML: %s", yaml.safe_load(f))
+        # Send to logging service
+        try:
+            requests.post(
+                "http://logging:5100/api/log",
+                json={
+                    "source": "wen-interface",
+                    "destination": ["web"],
+                    "log": {
+                        "type": "plugin.register",
+                        "timestamp": datetime.now().isoformat(),
+                        "message": f"Plugin '{config['name']}' "
+                        f"registered successfully."
+                    }
+                },
+                timeout=3
+            )
+        except Exception as e:
+            logging.warning(
+                "Failed to send startup webhook to logging service."
+                f" Error: {e}"
+            )
 
         return True
 
@@ -787,6 +830,28 @@ class PluginConfig:
                         f,
                         default_flow_style=False,
                         allow_unicode=True
+                    )
+
+                # Send to logging service
+                try:
+                    requests.post(
+                        "http://logging:5100/api/log",
+                        json={
+                            "source": "wen-interface",
+                            "destination": ["web"],
+                            "log": {
+                                "type": "plugin.delete",
+                                "timestamp": datetime.now().isoformat(),
+                                "message": f"Plugin '{entry['name']}' "
+                                f"deleted successfully."
+                            }
+                        },
+                        timeout=3
+                    )
+                except Exception as e:
+                    logging.warning(
+                        "Failed to send startup webhook to logging service."
+                        f" Error: {e}"
                     )
 
                 return True

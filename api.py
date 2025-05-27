@@ -168,8 +168,9 @@ def api_config():
 )
 def api_webhook():
     """
-    API endpoint to receive webhooks from plugins.
-    POST from the plugin when a webhook is received.
+    API endpoint to receive logs from plugins and services.
+    Logging service will broker the logs to the appropriate destinations.
+    Logging service sends a POST request to this endpoint
 
     Returns:
         JSON response indicating success.
