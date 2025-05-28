@@ -13,7 +13,6 @@ from flask import (
     request,
 )
 from flask_session import Session
-from colorama import Fore, Style
 import requests
 import os
 import logging
@@ -24,29 +23,29 @@ from api import web_api
 from web import web_routes
 
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-
-# Initialise the logging module
-logger = AlertLogger()
-
 # Load the configuration
-print(Fore.YELLOW + "Loading configuration..." + Style.RESET_ALL)
 app_config = GlobalConfig()
 app_config.load_config()
 
+# Set up logging
+log_level_str = app_config.config['web']['logging-level'].upper()
+log_level = getattr(logging, log_level_str, logging.INFO)
+logging.basicConfig(level=log_level)
+print(f"Logging level set to: {log_level_str}")
+
+# Initialise the logging module (for alerts page)
+logger = AlertLogger()
+
 # Load the plugin configuration
-print()
-print(Fore.YELLOW + "Loading plugins..." + Style.RESET_ALL)
 plugin_list = PluginConfig()
 plugin_list.load_config()
-print(Fore.GREEN, len(plugin_list), Style.RESET_ALL, "plugins loaded")
-
-print()
-print(Fore.YELLOW + "Loaded plugins:" + Style.RESET_ALL)
+logging.info("%s plugins loaded", len(plugin_list))
 for plugin in plugin_list:
-    print("  ", plugin['name'])
-print()
+    logging.debug(
+        "Plugin '%s' loaded with webhook URL: %s",
+        plugin['name'],
+        plugin['webhook']['safe_url']
+    )
 
 # Create the Flask application
 app = Flask(__name__)

@@ -289,11 +289,27 @@
     </header>
 
     <form id="web-form" class="w3-container w3-padding-16">
-        <!-- Debug mode - True or False -->
-        <label>Debug Mode</label>
-        <p class="w3-small w3-text-grey">Enables additional terminal messages</p>
-        <input class="w3-check" type="checkbox" name="web_debug"
-            {% if config['web']['debug'] %}checked{% endif %}>
+        <!-- Logging level - debug, info, warning, error, critical -->
+        <label>Logging Level</label>
+        <p class="w3-small w3-text-grey">Sets the level of logging on the terminal and in Alerts</p>
+        <select class="w3-select" name="web_logging_level" style="width: auto;">
+            {% set levels = ['debug', 'info', 'warning', 'error', 'critical'] %}
+            {% set current_level = config['web']['logging-level'] %}
+            {% for level in levels %}
+                <option value="{{ level }}"
+                    {% if current_level == level %}selected{% endif %}>
+                    {{ level|capitalize }}
+                </option>
+            {% endfor %}
+            {% if current_level not in levels %}
+                <option value="" selected disabled>-- Select --</option>
+            {% endif %}
+        </select>
+        {% if current_level not in levels %}
+            <span title="Invalid logging level" style="color: #e53935; margin-left: 8px;">
+                <i class="fa fa-exclamation-triangle"></i>
+            </span>
+        {% endif %}
     </form>
 
     <!-- Save button -->

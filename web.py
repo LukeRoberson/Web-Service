@@ -43,9 +43,6 @@ from typing import Optional
 import sys
 
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-
 # Create a Flask blueprint for the web routes
 web_routes = Blueprint(
     'web_routes',

@@ -32,9 +32,6 @@ import logging
 from typing import Optional
 
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-
 # Create a Flask blueprint for the API
 web_api = Blueprint(
     'web_api',

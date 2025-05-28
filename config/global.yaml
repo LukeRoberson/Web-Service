@@ -23,4 +23,4 @@ teams:
   user: Azure AD user for Teams
   user-id: Azure AD user ID for Teams
 web:
-  debug: true
+  logging-level: info

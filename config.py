@@ -17,17 +17,12 @@ Classes:
 """
 
 import yaml
-from colorama import Fore, Style
 import urllib.parse
 from typing import Any
 import logging
 import ipaddress
 from datetime import datetime
 import requests
-
-
-# Set up logging
-logging.basicConfig(level=logging.INFO)
 
 
 def validate_ip_addresses(
@@ -128,6 +123,9 @@ class GlobalConfig:
 
         load_config():
             Loads the configuration from the YAML file.
+
+        update_config(config):
+            Updates the configuration with a new dictionary.
     '''
 
     def __init__(
@@ -222,11 +220,7 @@ class GlobalConfig:
         for section, required_keys in section_requirements.items():
             # Check if the section exists in the config
             if section not in config:
-                print(
-                    Fore.RED,
-                    f"Missing '{section}' in configuration.",
-                    Style.RESET_ALL
-                )
+                logging.critical(f"Missing '{section}' in configuration.")
                 raise ValueError(
                     f"Missing '{section}' in configuration."
                 )
@@ -235,14 +229,13 @@ class GlobalConfig:
             if required_keys:
                 for key in required_keys:
                     if key not in config[section]:
-                        print(
-                            Fore.RED,
-                            f"Missing '{key}' in '{section}' section.",
-                            Style.RESET_ALL
-                        )
-                        raise ValueError(
-                            f"Missing '{key}' in '{section}' section."
-                        )
+                        logging.critical(f"Missing '{key}' in '{section}'")
+
+        # Check logging level is valid
+        valid_levels = {"debug", "info", "warning", "error", "critical"}
+        level = config.get("web", {}).get("logging-level", "").lower()
+        if level not in valid_levels:
+            logging.error(f"Invalid logging-level '{level}'")
 
     def load_config(
         self,
@@ -286,7 +279,7 @@ class GlobalConfig:
             "sql": [
                 "server", "port", "database", "username", "password", "salt"
             ],
-            "web": ["debug"]
+            "web": ["logging-level"]
         }
 
         # Validate the config
@@ -383,8 +376,8 @@ class GlobalConfig:
 
         # Web Section
         elif config['category'] == "web":
-            self.config['web']['debug'] = (
-                config['web_debug']
+            self.config['web']['logging-level'] = (
+                config['web_logging_level'].lower()
             )
 
         # If the category is not recognized, return False
@@ -730,10 +723,9 @@ class PluginConfig:
                 return True
 
         # If no matching entry is found, return False
-        print(
-            Fore.RED,
-            f"Entry {new_config['plugin_name']} not found",
-            Style.RESET_ALL
+        logging.error(
+            "Cannot update plugin. Entry %s not found",
+            new_config['plugin_name']
         )
         return False
 
