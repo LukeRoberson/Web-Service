@@ -230,8 +230,12 @@ def api_webhook():
 
     # Process the webhook data, store in the DB
     logger.log_alert(
+        timestamp=data['timestamp'],
         source=data['source'],
-        type=data['type'],
+        group=data['group'],
+        category=data['category'],
+        alert=data['alert'],
+        severity=data['severity'],
         message=data['message']
     )
 

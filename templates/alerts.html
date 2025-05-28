@@ -88,8 +88,11 @@
             <tr>
                 <th style="white-space:nowrap; cursor:pointer;" onclick="sortTable(0)">Time &#x25B2;&#x25BC;</th>
                 <th style="white-space:nowrap; cursor:pointer;" onclick="sortTable(1)">Source &#x25B2;&#x25BC;</th>
-                <th style="white-space:nowrap; cursor:pointer;" onclick="sortTable(2)">Type &#x25B2;&#x25BC;</th>
-                <th style="cursor:pointer;" onclick="sortTable(3)">Message &#x25B2;&#x25BC;</th>
+                <th style="white-space:nowrap; cursor:pointer;" onclick="sortTable(2)">Group &#x25B2;&#x25BC;</th>
+                <th style="white-space:nowrap; cursor:pointer;" onclick="sortTable(3)">Category &#x25B2;&#x25BC;</th>
+                <th style="white-space:nowrap; cursor:pointer;" onclick="sortTable(4)">Alert &#x25B2;&#x25BC;</th>
+                <th style="white-space:nowrap; cursor:pointer;" onclick="sortTable(5)">Severity &#x25B2;&#x25BC;</th>
+                <th style="cursor:pointer;" onclick="sortTable(6)">Message &#x25B2;&#x25BC;</th>
             </tr>
         </thead>
         <tbody>
@@ -98,7 +101,10 @@
                 <td style="white-space:nowrap;">{{ alert[0] }}</td>
                 <td style="white-space:nowrap;">{{ alert[1] }}</td>
                 <td style="white-space:nowrap;">{{ alert[2] }}</td>
-                <td style="white-space:normal; overflow-wrap:break-word; word-break:break-all;">{{ alert[3] }}</td>
+                <td style="white-space:nowrap;">{{ alert[3] }}</td>
+                <td style="white-space:nowrap;">{{ alert[4] }}</td>
+                <td style="white-space:nowrap;">{{ alert[5] }}</td>
+                <td style="white-space:normal; overflow-wrap:break-word; word-break:break-all;">{{ alert[6] }}</td>
             </tr>
         {% endfor %}
         </tbody>
