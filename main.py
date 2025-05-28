@@ -74,8 +74,8 @@ def make_dynamic_webhook_handler(plugin_name, ip_list):
         headers.pop('Content-Length', None)
         headers.pop('Transfer-Encoding', None)
 
-        logging.info(
-            f"Received webhook request for plugin '{plugin_name}' "
+        logging.debug(
+            f"Received webhook for plugin '{plugin_name}' "
             f"from IP: {src}"
         )
 

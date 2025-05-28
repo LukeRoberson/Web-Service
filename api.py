@@ -2,6 +2,10 @@
 API module.
     Used for communication between services and the web UI.
 
+Functions:
+    - get_plugin_by_name:
+        Find a plugin's configuration by its name.
+
 Blueprint lists routes for the web API. This is registered in main.py
 
 Routes:
@@ -25,6 +29,7 @@ from flask import (
 
 import os
 import logging
+from typing import Optional
 
 
 # Set up logging
@@ -35,6 +40,25 @@ web_api = Blueprint(
     'web_api',
     __name__
 )
+
+
+def get_plugin_by_name(
+    plugin_list,
+    plugin_name: str
+) -> Optional[dict]:
+    """
+    Find a plugin's configuration by its name.
+
+    Args:
+        plugin_list (PluginConfig): The plugin configuration object.
+        plugin_name (str): The name of the plugin to find.
+    """
+
+    for plugin in plugin_list.config:
+        if plugin['name'] == plugin_name:
+            return plugin
+
+    return None
 
 
 @web_api.route(
@@ -52,37 +76,60 @@ def api_test():
 
 @web_api.route(
     '/api/plugins',
-    methods=['POST', 'PATCH', 'DELETE']
+    methods=['GET', 'POST', 'PATCH', 'DELETE']
 )
 def api_plugins():
     """
     API endpoint to manage plugins.
     Called by the UI when changes are made.
 
+    Methods:
+        GET - Retrieve config for a specific plugin.
+        POST - Add a new plugin.
+        PATCH - Update an existing plugin.
+        DELETE - Remove a plugin.
+
     Returns:
         JSON response indicating success.
     """
 
-    # The body of the request
-    data = request.json
-
-    # Get the plugin list object from the current app config
+    # Get the plugin list, refresh the configuration
     plugin_list = current_app.config['PLUGIN_LIST']
-
-    # Refresh the plugin list
     plugin_list.load_config()
 
+    # GET is used to get the current configuration for a specific plugin
+    if request.method == 'GET':
+        plugin_name = request.headers.get('X-Plugin-Name')
+        if not plugin_name:
+            return jsonify(
+                {
+                    'result': 'error',
+                    'message': 'Missing X-Plugin-Name header'
+                }
+            ), 400
+
+        plugin = get_plugin_by_name(plugin_list, plugin_name)
+        if plugin:
+            return jsonify({
+                'result': 'success',
+                'plugin': plugin}
+            )
+        return jsonify({
+            'result': 'error',
+            'message': f'Plugin {plugin_name} not found'
+        }), 404
+
     # POST is used to add a new plugin
-    if request.method == 'POST':
-        result = plugin_list.register(data)
+    elif request.method == 'POST':
+        result = plugin_list.register(request.json)
 
     # PATCH is used to update an existing plugin
     elif request.method == 'PATCH':
-        result = plugin_list.update_config(data)
+        result = plugin_list.update_config(request.json)
 
     # DELETE is used to remove a plugin
     elif request.method == 'DELETE':
-        result = plugin_list.delete(data['name'])
+        result = plugin_list.delete(request.json['name'])
 
     # If this failed...
     if not result:
@@ -120,10 +167,8 @@ def api_config():
     logging.info("Global config requested through API")
     logging.info("GLOBAL_CONFIG: %s", current_app.config['GLOBAL_CONFIG'])
 
-    # Get the config object from the current app config
+    # Get the config, refresh the configuration
     app_config = current_app.config['GLOBAL_CONFIG']
-
-    # Refresh the configuration
     app_config.load_config()
 
     # GET is used to get the current configuration
