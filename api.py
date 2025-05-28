@@ -30,6 +30,7 @@ from flask import (
 import os
 import logging
 from typing import Optional
+from systemlog import system_log
 
 
 # Create a Flask blueprint for the API
@@ -111,6 +112,12 @@ def api_plugins():
                 'result': 'success',
                 'plugin': plugin}
             )
+
+        system_log.log(
+            f"Plugin {plugin_name} not found in configuration",
+            level='error'
+        )
+
         return jsonify({
             'result': 'error',
             'message': f'Plugin {plugin_name} not found'

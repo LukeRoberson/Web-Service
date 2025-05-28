@@ -10,6 +10,7 @@ Usage:
 
 import sqlite3
 import logging
+from systemlog import system_log
 
 
 class AlertLogger:
@@ -156,6 +157,7 @@ class AlertLogger:
         """)
         self.conn.commit()
         logging.info("Database initialized at %s", self.db_path)
+        system_log.log("Logging database initialized")
 
     def log_alert(
         self,

@@ -37,10 +37,11 @@ from flask import (
 
 from functools import wraps
 from itsdangerous import URLSafeTimedSerializer
-
 import logging
 from typing import Optional
 import sys
+
+from systemlog import system_log
 
 
 # Create a Flask blueprint for the web routes
@@ -83,6 +84,11 @@ def verify_auth_token(
     # If there's a bad signature or the token is expired, return None
     except Exception:
         logging.warning("Invalid or expired token")
+        system_log.log(
+            message="Invalid or expired authentication token",
+            alert="authentication",
+            severity="warning",
+        )
         return None
 
 

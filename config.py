@@ -21,8 +21,8 @@ import urllib.parse
 from typing import Any
 import logging
 import ipaddress
-from datetime import datetime
-import requests
+
+from systemlog import system_log
 
 
 def validate_ip_addresses(
@@ -45,55 +45,6 @@ def validate_ip_addresses(
 
     except ValueError:
         return False
-
-
-def send_log(
-    message: str,
-    url: str = "http://logging:5100/api/log",
-    source: str = "web-interface",
-    destination: list = ["web"],
-    group: str = "service",
-    category: str = "web",
-    alert: str = "event",
-    severity: str = "info",
-) -> None:
-    """
-    Send a message to the logging service.
-
-    Args:
-        message (str): The message to send.
-        url (str): The URL of the logging service API.
-        source (str): The source of the log message.
-        destination (list): The destinations for the log message.
-        group (str): The group to which the log message belongs.
-        category (str): The category of the log message.
-        alert (str): The alert type for the log message.
-        severity (str): The severity level of the log message.
-    """
-
-    # Send a log as a webhook to the logging service
-    try:
-        requests.post(
-            url,
-            json={
-                "source": source,
-                "destination": destination,
-                "log": {
-                    "group": group,
-                    "category": category,
-                    "alert": alert,
-                    "severity": severity,
-                    "timestamp": str(datetime.now()),
-                    "message": message
-                }
-            },
-            timeout=3
-        )
-    except Exception as e:
-        logging.warning(
-            "Failed to send log to logging service. %s",
-            e
-        )
 
 
 class GlobalConfig:
@@ -718,7 +669,9 @@ class PluginConfig:
                     )
 
                 # Send to logging service
-                send_log(f"Plugin '{entry['name']}' updated successfully.")
+                system_log.log(
+                    f"Plugin '{entry['name']}' updated successfully."
+                )
 
                 return True
 
@@ -799,7 +752,7 @@ class PluginConfig:
             )
 
         # Send to logging service
-        send_log(f"Plugin '{config['name']}' registered successfully.")
+        system_log.log(f"Plugin '{config['name']}' registered successfully.")
 
         return True
 
@@ -838,7 +791,9 @@ class PluginConfig:
                     )
 
                 # Send to logging service
-                send_log(f"Plugin '{entry['name']}' deleted successfully.")
+                system_log.log(
+                    f"Plugin '{entry['name']}' deleted successfully."
+                )
 
                 return True
 
