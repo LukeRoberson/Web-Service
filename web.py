@@ -40,6 +40,7 @@ from itsdangerous import URLSafeTimedSerializer
 import logging
 from typing import Optional
 import sys
+import requests
 
 from systemlog import system_log
 
@@ -288,6 +289,96 @@ def plugins():
         'plugins.html',
         title="Plugins",
         plugins=plugin_list.config,
+    )
+
+
+@web_routes.route(
+    '/tools',
+    methods=['GET', 'POST']
+)
+@protected
+def tools():
+    '''
+    Route to display the tools page.
+    Provides a simple encryption/decryption tool
+
+    Methods:
+        GET: Display the tool page as normal
+        POST: Process the form submission to encrypt/decrypt
+    '''
+
+    encrypt_encrypted = encrypt_salt = encrypt_error = None
+    decrypt_plain = decrypt_error = None
+
+    # Process the form submission
+    if request.method == 'POST':
+        # Get strings from the form
+        plain = request.form.get('plaintext', '')
+        encrypted = request.form.get('encrypted', '')
+        salt = request.form.get('salt', '')
+
+        operation = None
+        if plain and not encrypted:
+            operation = 'encrypt'
+        elif encrypted and salt and not plain:
+            operation = 'decrypt'
+        else:
+            error = "Need either 'plain-text' or 'encrypted' with 'salt'"
+            logging.error(error)
+            return render_template(
+                'tools.html',
+                encrypt_encrypted=encrypt_encrypted,
+                encrypt_salt=encrypt_salt,
+                encrypt_error=encrypt_error,
+                decrypt_plain=decrypt_plain,
+                decrypt_error=decrypt_error,
+            )
+
+        try:
+            response = requests.post(
+                'http://security:5100/api/crypto',
+                json={
+                    'type': operation,
+                    'plain-text': plain,
+                    'encrypted': encrypted,
+                    'salt': salt,
+                },
+                timeout=5
+            )
+
+            data = response.json()
+            if data.get('result') == 'success':
+                if operation == 'encrypt':
+                    # If encrypting, get the encrypted string and salt
+                    encrypt_encrypted = data.get('encrypted')
+                    encrypt_salt = data.get('salt')
+
+                elif operation == 'decrypt':
+                    # If decrypting, get the decrypted string
+                    decrypt_plain = data.get('decrypted')
+
+            else:
+                if operation == 'encrypt':
+                    encrypt_error = data.get('error', 'Unknown error')
+                    logging.error("Encryption failed: %s", data.get('error'))
+                else:
+                    decrypt_error = data.get('error', 'Unknown error')
+                    logging.error("Decryption failed: %s", data.get('error'))
+
+        except Exception as e:
+            if operation == 'encrypt':
+                encrypt_error = str(e)
+            else:
+                decrypt_error = str(e)
+
+    # Display the page
+    return render_template(
+        'tools.html',
+        encrypt_encrypted=encrypt_encrypted,
+        encrypt_salt=encrypt_salt,
+        encrypt_error=encrypt_error,
+        decrypt_plain=decrypt_plain,
+        decrypt_error=decrypt_error,
     )
 
 

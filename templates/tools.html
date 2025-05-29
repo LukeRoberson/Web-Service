@@ -1,0 +1,83 @@
+<!--
+    ==========================================================================
+    Tools Page
+    --------------------------------------------------------------------------
+    - Useful tools for diagnostics and maintenance
+    - Encrypt a string
+    - Decrypt a string
+    ==========================================================================
+-->
+
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Tools</h1>
+
+<!-- Encrypt a string -->
+<div class="w3-container w3-responsive w3-card w3-margin">
+    <header class="w3-container w3-light-grey">
+        <h3>Encrypt</h3>
+    </header>
+
+    <!-- Plain text input -->
+    <form id="encrypt-form" class="w3-container w3-padding-16 w3-margin" method="post" action="{{ url_for('web_routes.tools') }}">
+        <label for="encrypt-input">Enter a plain text string to encrypt</label>
+        <input type="text" id="encrypt-input" name="plaintext" class="w3-input w3-border" required>
+        <br>
+        
+        <button class="w3-button w3-green w3-block" type="submit">Encrypt</button>
+    </form>
+
+    {% if encrypt_encrypted and encrypt_salt %}
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green w3-margin">
+        <strong>Encrypted String:</strong>
+        <pre style="white-space: pre-wrap;">{{ encrypt_encrypted }}</pre>
+        <strong>Salt:</strong>
+        <pre style="white-space: pre-wrap;">{{ encrypt_salt }}</pre>
+    </div>
+    
+    {% elif encrypt_error %}
+    <div class="w3-panel w3-pale-red w3-leftbar w3-border-red w3-margin">
+        <strong>Error:</strong> {{ encrypt_error }}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Decrypt a string -->
+<div class="w3-container w3-responsive w3-card w3-margin">
+    <header class="w3-container w3-light-grey">
+        <h3>Decrypt</h3>
+    </header>
+
+    <!-- Encrypted string and salt -->
+    <form id="decrypt-form" class="w3-container w3-padding-16 w3-margin" method="post" action="{{ url_for('web_routes.tools') }}">
+        <!-- Encrypted string -->
+        <label for="decrypt-input">Encrypted String to decrypt</label>
+        <input type="text" id="encrypt-input" name="encrypted" class="w3-input w3-border" required>
+        <br>
+        
+        <!-- Salt -->
+        <label for="salt-input">Salt</label>
+        <input type="text" id="salt-input" name="salt" class="w3-input w3-border" required>
+        <br>
+        
+        <!-- Decryption button -->
+        <button class="w3-button w3-green w3-block" type="submit">Decrypt</button>
+    </form>
+
+    {% if decrypt_plain %}
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green w3-margin">
+        <strong>Decrypted String:</strong>
+        <pre style="white-space: pre-wrap;">{{ decrypt_plain }}</pre>
+    </div>
+    
+    {% elif decrypt_error %}
+    <div class="w3-panel w3-pale-red w3-leftbar w3-border-red w3-margin">
+        <strong>Error:</strong> {{ decrypt_error }}
+    </div>
+    {% endif %}
+
+</div>
+
+</br></br>
+{% endblock %}
