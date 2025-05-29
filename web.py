@@ -199,18 +199,36 @@ def alerts():
     '''
     Route to display the alerts page.
     Gets the recent alerts from the logger and passes them to the template.
+
+    The alerts are paginated, with a default page size of 200.
+    The total number of alerts and pages is calculated.
+    The page number is taken from the request arguments, defaulting to 1.
     '''
 
     # Get the logger object from the current app config
     logger = current_app.config['LOGGER']
 
+    # Work out how many pages of alerts there are
+    page_size = 200
+    total_logs = len(logger)
+    total_pages = (total_logs + page_size - 1) // page_size
+
+    # Get the page number to display, or default to 1
+    page_number = request.args.get('page', 1, type=int)
+
     # Collect a list of alerts
-    alerts = logger.get_recent_alerts()
+    alerts = logger.get_recent_alerts(
+        offset=(page_number - 1) * page_size,
+        limit=page_size
+    )
 
     return render_template(
         'alerts.html',
         title="Alerts",
         alerts=alerts,
+        page=page_number,
+        total_logs=total_logs,
+        total_pages=total_pages,
     )
 
 

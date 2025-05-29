@@ -76,6 +76,11 @@ body.dark-mode main {
     color: #e0e0e0 !important;
 }
 
+html.dark-mode span,
+body.dark-mode span {
+    color: #e0e0e0 !important;
+}
+
 
 /* Dark mode toggle switch */
 .switch {

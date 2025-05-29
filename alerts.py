@@ -247,13 +247,24 @@ class AlertLogger:
             conn.commit()
 
     def get_recent_alerts(
-        self
+        self,
+        offset: int = 0,
+        limit: int = None
     ) -> list:
         '''
         Retrieves recent alerts from the database.
+        By default, this:
+            Retrieves all alerts from the last 24 hours
+            Starts from the most recent alert
+
+        Pagination is supported:
+            Set a limit to retrieve a specific number of alerts.
+            Set an offset to start getting alerts from a specific point.
 
         Parameters:
-            None
+            offset (int): The number of alerts to skip.
+                This is useful for pagination.
+            limit (int): The maximum number of alerts to retrieve.
 
         Returns:
             list: A list of tuples containing
@@ -262,7 +273,9 @@ class AlertLogger:
 
         with sqlite3.connect(self.db_path) as conn:
             c = conn.cursor()
-            c.execute("""
+
+            # The base query to retrieve all recent alerts
+            base_query = """
                 SELECT
                     timestamp,
                     source,
@@ -274,7 +287,17 @@ class AlertLogger:
                 FROM alerts
                 WHERE timestamp >= datetime('now', '-24 hours')
                 ORDER BY timestamp DESC
-            """)
+            """
+
+            # If a limit is specified, add it to the query
+            if limit is not None:
+                base_query += " LIMIT ? OFFSET ?"
+                c.execute(base_query, (limit, offset))
+
+            # If no limit is specified, execute the base query without limits
+            else:
+                c.execute(base_query)
+
             return c.fetchall()
 
 
