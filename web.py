@@ -208,9 +208,12 @@ def alerts():
     # Get the logger object from the current app config
     logger = current_app.config['LOGGER']
 
-    # Work out how many pages of alerts there are
+    # Check search parameters
+    search = request.args.get('search', '').strip()
+
+    # Manage pagination for alerts
     page_size = 200
-    total_logs = len(logger)
+    total_logs = logger.count_alerts(search=search)
     total_pages = (total_logs + page_size - 1) // page_size
 
     # Get the page number to display, or default to 1
@@ -219,7 +222,8 @@ def alerts():
     # Collect a list of alerts
     alerts = logger.get_recent_alerts(
         offset=(page_number - 1) * page_size,
-        limit=page_size
+        limit=page_size,
+        search=search,
     )
 
     return render_template(
@@ -229,6 +233,7 @@ def alerts():
         page=page_number,
         total_logs=total_logs,
         total_pages=total_pages,
+        request=request,
     )
 
 

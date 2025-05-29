@@ -30,6 +30,7 @@ class AlertLogger:
         log_alert(source, message): Logs an alert to the database.
         purge_old_alerts(): Purges alerts older than 24 hours.
         get_recent_alerts(): Retrieves recent alerts from the database.
+        count_alerts(): Counts the number of alerts in the database.
     '''
 
     def __init__(
@@ -249,7 +250,8 @@ class AlertLogger:
     def get_recent_alerts(
         self,
         offset: int = 0,
-        limit: int = None
+        limit: int = None,
+        search: str = ''
     ) -> list:
         '''
         Retrieves recent alerts from the database.
@@ -265,6 +267,8 @@ class AlertLogger:
             offset (int): The number of alerts to skip.
                 This is useful for pagination.
             limit (int): The maximum number of alerts to retrieve.
+            search (str): A search term to filter alerts by message.
+                If blank, all alerts are returned.
 
         Returns:
             list: A list of tuples containing
@@ -275,7 +279,7 @@ class AlertLogger:
             c = conn.cursor()
 
             # The base query to retrieve all recent alerts
-            base_query = """
+            query = """
                 SELECT
                     timestamp,
                     source,
@@ -286,19 +290,62 @@ class AlertLogger:
                     message
                 FROM alerts
                 WHERE timestamp >= datetime('now', '-24 hours')
-                ORDER BY timestamp DESC
             """
 
-            # If a limit is specified, add it to the query
+            # Manage additional parameters for the query
+            params = []
+
+            # If a search term is provided, add it to the query
+            if search:
+                query += " AND message LIKE ?"
+                params.append(f"%{search}%")
+
+            # Order the results by timestamp in descending order
+            query += "ORDER BY timestamp DESC"
+
+            # If a limit is specified, add it to the query parameters
             if limit is not None:
-                base_query += " LIMIT ? OFFSET ?"
-                c.execute(base_query, (limit, offset))
+                query += " LIMIT ? OFFSET ?"
+                params.extend([limit, offset])
 
-            # If no limit is specified, execute the base query without limits
-            else:
-                c.execute(base_query)
-
+            # Execute the query with the parameters
+            c.execute(query, params)
             return c.fetchall()
+
+    def count_alerts(
+        self,
+        search: str = ''
+    ) -> int:
+        '''
+        Counts the number of alerts in the database.
+        Optionally filters by a search term.
+
+        Parameters:
+            search (str): A search term to filter alerts by message.
+                If blank, all alerts are counted.
+
+        Returns:
+            int: The number of alerts matching the criteria.
+        '''
+
+        with sqlite3.connect(self.db_path) as conn:
+            c = conn.cursor()
+
+            # Base query to count alerts in the last 24 hours
+            query = """
+                SELECT COUNT(*)
+                FROM alerts
+                WHERE timestamp >= datetime('now', '-24 hours')
+            """
+
+            params = []
+
+            if search:
+                query += " AND message LIKE ?"
+                params.append(f"%{search}%")
+
+            c.execute(query, params)
+            return c.fetchone()[0]
 
 
 if __name__ == "__main__":
