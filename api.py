@@ -227,7 +227,7 @@ def api_webhook():
 
     # The body of the request
     data = request.json
-    logging.info("Received webhook data: %s", data)
+    logging.debug("Received webhook data: %s", data)
 
     # Get the logger object from the current app config
     logger = current_app.config['LOGGER']

@@ -83,15 +83,27 @@
 
     <!-- Toolbar -->
     <div class="w3-padding" style="display: flex; align-items: center; justify-content: space-between;">
-        <!-- Search bar -->
-        <form method="get" style="display: inline;" id="searchForm">
-            <input type="text" name="search" placeholder="Search messages..." value="{{ request.args.get('search', '') }}" style="padding: 4px 8px;"/>
-            <button type="submit" class="w3-button w3-blue w3-round w3-small" style="margin-left: 4px;">
-                <i class="fa fa-search" aria-hidden="true"></i> Search
-            </button>
-            {# Keep page on 1 when searching #}
-            <input type="hidden" name="page" value="1">
-        </form>
+        <!-- Simple filtering controls -->
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <!-- Seach bar -->
+            <form method="get" style="display: inline;" id="searchForm">
+                <input type="text" name="search" placeholder="Search messages..." value="{{ request.args.get('search', '') }}" style="padding: 4px 8px;"/>
+                <button type="submit" class="w3-button w3-blue w3-round w3-small" style="margin-left: 4px;">
+                    <i class="fa fa-search" aria-hidden="true"></i> Search
+                </button>
+                {% if request.args.get('system_only') %}
+                    <input type="hidden" name="system_only" value="1">
+                {% endif %}
+            </form>
+
+            <!-- System log filter -->
+            <form method="get" style="display: inline;" id="systemLogsForm">
+                <label style="margin-left: 12px; font-size: 15px;">
+                    <input type="checkbox" name="system_only" value="1" {% if request.args.get('system_only') %}checked{% endif %} onchange="this.form.submit()">
+                    System logs only
+                </label>
+            </form>
+        </div>
 
         <!-- Summary and pagination -->
         <div style="display: flex; align-items: center; gap: 16px;">

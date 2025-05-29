@@ -251,7 +251,8 @@ class AlertLogger:
         self,
         offset: int = 0,
         limit: int = None,
-        search: str = ''
+        search: str = '',
+        group: str = None,
     ) -> list:
         '''
         Retrieves recent alerts from the database.
@@ -300,6 +301,11 @@ class AlertLogger:
                 query += " AND message LIKE ?"
                 params.append(f"%{search}%")
 
+            # If a group is specified, filter by group
+            if group:
+                query += " AND \"group\" = ?"
+                params.append(group)
+
             # Order the results by timestamp in descending order
             query += "ORDER BY timestamp DESC"
 
@@ -314,7 +320,8 @@ class AlertLogger:
 
     def count_alerts(
         self,
-        search: str = ''
+        search: str = '',
+        group: str = None,
     ) -> int:
         '''
         Counts the number of alerts in the database.
@@ -323,6 +330,7 @@ class AlertLogger:
         Parameters:
             search (str): A search term to filter alerts by message.
                 If blank, all alerts are counted.
+            group (str): A group to filter alerts by.
 
         Returns:
             int: The number of alerts matching the criteria.
@@ -338,12 +346,20 @@ class AlertLogger:
                 WHERE timestamp >= datetime('now', '-24 hours')
             """
 
+            # Manage additional parameters for the query
             params = []
 
+            # If a search term is provided, add it to the query
             if search:
                 query += " AND message LIKE ?"
                 params.append(f"%{search}%")
 
+            # If a group is specified, filter by group
+            if group:
+                query += " AND \"group\" = ?"
+                params.append(group)
+
+            # Execute the query with the parameters
             c.execute(query, params)
             return c.fetchone()[0]
 

@@ -208,12 +208,16 @@ def alerts():
     # Get the logger object from the current app config
     logger = current_app.config['LOGGER']
 
-    # Check search parameters
+    # Check search and filter parameters
     search = request.args.get('search', '').strip()
+    system_only = request.args.get('system_only') == '1'
 
     # Manage pagination for alerts
     page_size = 200
-    total_logs = logger.count_alerts(search=search)
+    total_logs = logger.count_alerts(
+        search=search,
+        group='service' if system_only else None
+    )
     total_pages = (total_logs + page_size - 1) // page_size
 
     # Get the page number to display, or default to 1
@@ -224,6 +228,7 @@ def alerts():
         offset=(page_number - 1) * page_size,
         limit=page_size,
         search=search,
+        group='service' if system_only else None
     )
 
     return render_template(
