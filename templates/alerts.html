@@ -47,6 +47,22 @@
 <script src="{{ url_for('static', filename='js/autorefresh.js') }}"></script>
 <script src="{{ url_for('static', filename='js/sorttable.js') }}"></script>
 <script src="{{ url_for('static', filename='js/paginate.js') }}"></script>
+        
+<script>
+    function toggleFiltering() {
+        var panel = document.getElementById('filtering-panel');
+        var caret = document.getElementById('filtering-caret');
+        if (panel.style.display === 'none' || panel.style.display === '') {
+            panel.style.display = 'block';
+            caret.classList.remove('fa-caret-down');
+            caret.classList.add('fa-caret-up');
+        } else {
+            panel.style.display = 'none';
+            caret.classList.remove('fa-caret-up');
+            caret.classList.add('fa-caret-down');
+        }
+    }
+</script>
 
 
 <!--
@@ -56,7 +72,8 @@
     - Title: "Live Alerts"
     - Refresh button: reloads the page to get the latest alerts
     - Auto-refresh toggle: allows users to enable or disable auto-refresh
-    - A toolbar with summary, pagination, and filtering options
+    - A toolbar with summary, pagination, and search controls
+    - A toolbar with more advanced filtering options
     ==========================================================================
 -->
 <div class="w3-container w3-responsive w3-padding-16" style="width:90vw; max-width:1600px; margin:0 auto;">
@@ -81,7 +98,7 @@
         </div>
     </div>
 
-    <!-- Toolbar -->
+    <!-- Toolbar - Search and Pagination -->
     <div class="w3-padding" style="display: flex; align-items: center; justify-content: space-between;">
         <!-- Simple filtering controls -->
         <div style="display: flex; align-items: center; gap: 16px;">
@@ -120,6 +137,82 @@
             <button onclick="goToPage('{{ page + 1 }}')" {% if page >= total_pages %}disabled{% endif %} title="Next page">
                 <i class="fa fa-chevron-right"></i>
             </button>
+        </div>
+    </div>
+
+    <!-- Toolbar - Advanced filtering -->
+    <div class="w3-padding" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+        <!-- Filtering button -->
+        <button class="w3-button w3-blue w3-round w3-small" type="button" onclick="toggleFiltering()" style="margin-bottom: 8px;">
+            <i class="fa fa-filter"></i> Filtering
+            <i id="filtering-caret" class="fa fa-caret-down" style="margin-left: 4px;"></i>
+        </button>
+        
+        <!-- Filtering Panel (expands downward) -->
+        <div id="filtering-panel" style="display:none; margin-top: 8px; background: #f7f7f7; border-radius: 6px; padding: 16px;">
+            <form method="get" style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
+                <!-- Source dropdown -->
+                <div>
+                    <label for="filter-source" style="font-weight: 500;">Source</label><br>
+                    <select id="filter-source" name="source" class="w3-select" style="width: 180px;">
+                        <option value="">All</option>
+                        {% for s in source_list %}
+                            <option value="{{ s }}" {% if request.args.get('source') == s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Group dropdown -->
+                <div>
+                    <label for="filter-group" style="font-weight: 500;">Group</label><br>
+                    <select id="filter-group" name="group" class="w3-select" style="width: 180px;">
+                        <option value="">All</option>
+                        {% for g in group_list %}
+                            <option value="{{ g }}" {% if request.args.get('group') == g %}selected{% endif %}>{{ g }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Category dropdown -->
+                <div>
+                    <label for="filter-category" style="font-weight: 500;">Category</label><br>
+                    <select id="filter-category" name="category" class="w3-select" style="width: 180px;">
+                        <option value="">All</option>
+                        {% for c in category_list %}
+                            <option value="{{ c }}" {% if request.args.get('category') == c %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Alert dropdown -->
+                <div>
+                    <label for="filter-alert" style="font-weight: 500;">Alert</label><br>
+                    <select id="filter-alert" name="alert" class="w3-select" style="width: 180px;">
+                        <option value="">All</option>
+                        {% for a in alert_list %}
+                            <option value="{{ a }}" {% if request.args.get('alert') == a %}selected{% endif %}>{{ a }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Severity dropdown -->
+                <div>
+                    <label for="filter-severity" style="font-weight: 500;">Severity</label><br>
+                    <select id="filter-severity" name="severity" class="w3-select" style="width: 180px;">
+                        <option value="">All</option>
+                        {% for s in severity_list %}
+                            <option value="{{ s }}" {% if request.args.get('severity') == s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Submit button -->
+                <div style="align-self: flex-end;">
+                    <button type="submit" class="w3-button w3-blue w3-round" style="margin-top: 8px;">
+                        <i class="fa fa-filter"></i> Apply
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

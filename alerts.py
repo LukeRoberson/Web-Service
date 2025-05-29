@@ -10,6 +10,8 @@ Usage:
 
 import sqlite3
 import logging
+from typing import List, Tuple
+
 from systemlog import system_log
 
 
@@ -129,6 +131,93 @@ class AlertLogger:
         '''
 
         return any(alert[2] == message for alert in self.get_recent_alerts())
+
+    def _build_alerts_query(
+        self,
+        count: bool = False,
+        offset: int = 0,
+        limit: int = None,
+        search: str = '',
+        source: str = '',
+        group: str = '',
+        category: str = '',
+        alert: str = '',
+        severity: str = ''
+    ) -> Tuple[str, List[str]]:
+        '''
+        Builds a SQL query to retrieve or count alerts from the database.
+        This method constructs a query based on the provided parameters.
+        Used internally by get_recent_alerts and count_alerts.
+
+        Parameters:
+            count (bool): If True, builds a COUNT query.
+            offset (int): The number of alerts to skip for pagination.
+            limit (int): The maximum number of alerts to retrieve.
+            search (str): A search term to filter alerts by message.
+            source (str): A source to filter alerts by.
+            group (str): A group to filter alerts by.
+            category (str): A category to filter alerts by.
+            alert (str): An alert type to filter alerts by.
+            severity (str): A severity level to filter alerts by.
+
+        Returns:
+            tuple:
+                str: The SQL query string.
+                list: A list of parameters to bind to the query.
+        '''
+
+        # Base SELECT or COUNT
+        if count:
+            query = """
+                SELECT
+                COUNT(*)
+                FROM alerts
+                WHERE timestamp >= datetime('now', '-24 hours')
+            """
+
+        else:
+            query = """
+                SELECT
+                    timestamp,
+                    source,
+                    "group",
+                    category,
+                    alert,
+                    severity,
+                    message
+                FROM alerts
+                WHERE timestamp >= datetime('now', '-24 hours')
+            """
+        params = []
+
+        # Add filters
+        if search:
+            query += " AND message LIKE ?"
+            params.append(f"%{search}%")
+        if source:
+            query += " AND source = ?"
+            params.append(source)
+        if group:
+            query += " AND \"group\" = ?"
+            params.append(group)
+        if category:
+            query += " AND category = ?"
+            params.append(category)
+        if alert:
+            query += " AND alert = ?"
+            params.append(alert)
+        if severity:
+            query += " AND severity = ?"
+            params.append(severity)
+
+        # Add ordering and pagination for SELECT
+        if not count:
+            query += " ORDER BY timestamp DESC"
+            if limit is not None:
+                query += " LIMIT ? OFFSET ?"
+                params.extend([limit, offset])
+
+        return query, params
 
     def init_db(
         self
@@ -252,7 +341,11 @@ class AlertLogger:
         offset: int = 0,
         limit: int = None,
         search: str = '',
-        group: str = None,
+        source: str = '',
+        group: str = '',
+        category: str = '',
+        alert: str = '',
+        severity: str = '',
     ) -> list:
         '''
         Retrieves recent alerts from the database.
@@ -270,58 +363,38 @@ class AlertLogger:
             limit (int): The maximum number of alerts to retrieve.
             search (str): A search term to filter alerts by message.
                 If blank, all alerts are returned.
+            source (str): A source to filter alerts by.
+            group (str): A group to filter alerts by.
+            category (str): A category to filter alerts by.
+            alert (str): An alert type to filter alerts by.
+            severity (str): A severity level to filter alerts by.
 
         Returns:
             list: A list of tuples containing
                 the timestamp, source, and message of each alert.
         '''
 
+        # Build the query with the provided parameters
+        query, params = self._build_alerts_query(
+            count=False, offset=offset, limit=limit,
+            search=search, source=source, group=group,
+            category=category, alert=alert, severity=severity
+        )
+
+        # Execute the query and fetch results
         with sqlite3.connect(self.db_path) as conn:
             c = conn.cursor()
-
-            # The base query to retrieve all recent alerts
-            query = """
-                SELECT
-                    timestamp,
-                    source,
-                    "group",
-                    category,
-                    alert,
-                    severity,
-                    message
-                FROM alerts
-                WHERE timestamp >= datetime('now', '-24 hours')
-            """
-
-            # Manage additional parameters for the query
-            params = []
-
-            # If a search term is provided, add it to the query
-            if search:
-                query += " AND message LIKE ?"
-                params.append(f"%{search}%")
-
-            # If a group is specified, filter by group
-            if group:
-                query += " AND \"group\" = ?"
-                params.append(group)
-
-            # Order the results by timestamp in descending order
-            query += "ORDER BY timestamp DESC"
-
-            # If a limit is specified, add it to the query parameters
-            if limit is not None:
-                query += " LIMIT ? OFFSET ?"
-                params.extend([limit, offset])
-
-            # Execute the query with the parameters
             c.execute(query, params)
             return c.fetchall()
 
     def count_alerts(
         self,
         search: str = '',
-        group: str = None,
+        source: str = '',
+        group: str = '',
+        category: str = '',
+        alert: str = '',
+        severity: str = '',
     ) -> int:
         '''
         Counts the number of alerts in the database.
@@ -330,36 +403,26 @@ class AlertLogger:
         Parameters:
             search (str): A search term to filter alerts by message.
                 If blank, all alerts are counted.
+            source (str): A source to filter alerts by.
             group (str): A group to filter alerts by.
+            category (str): A category to filter alerts by.
+            alert (str): An alert type to filter alerts by.
+            severity (str): A severity level to filter alerts by.
 
         Returns:
             int: The number of alerts matching the criteria.
         '''
 
+        # Build the count query with the provided parameters
+        query, params = self._build_alerts_query(
+            count=True,
+            search=search, source=source, group=group,
+            category=category, alert=alert, severity=severity
+        )
+
+        # Execute the count query and return the result
         with sqlite3.connect(self.db_path) as conn:
             c = conn.cursor()
-
-            # Base query to count alerts in the last 24 hours
-            query = """
-                SELECT COUNT(*)
-                FROM alerts
-                WHERE timestamp >= datetime('now', '-24 hours')
-            """
-
-            # Manage additional parameters for the query
-            params = []
-
-            # If a search term is provided, add it to the query
-            if search:
-                query += " AND message LIKE ?"
-                params.append(f"%{search}%")
-
-            # If a group is specified, filter by group
-            if group:
-                query += " AND \"group\" = ?"
-                params.append(group)
-
-            # Execute the query with the parameters
             c.execute(query, params)
             return c.fetchone()[0]
 

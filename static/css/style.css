@@ -81,6 +81,34 @@ body.dark-mode span {
     color: #e0e0e0 !important;
 }
 
+html.dark-mode #filtering-panel,
+body.dark-mode #filtering-panel {
+    background: #23272e !important;
+    color: #e0e0e0 !important;
+}
+
+html.dark-mode #filtering-panel select,
+body.dark-mode #filtering-panel select,
+html.dark-mode #filtering-panel input,
+body.dark-mode #filtering-panel input,
+html.dark-mode #filtering-panel label,
+body.dark-mode #filtering-panel label {
+    background: #23272e !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+}
+
+html.dark-mode .w3-table {
+    background: #181a20 !important;
+    color: #e0e0e0 !important;
+}
+
+html.dark-mode .w3-table th,
+html.dark-mode .w3-table td {
+    background: #23272e !important;
+    color: #e0e0e0 !important;
+}
+
 
 /* Dark mode toggle switch */
 .switch {

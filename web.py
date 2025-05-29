@@ -211,12 +211,25 @@ def alerts():
     # Check search and filter parameters
     search = request.args.get('search', '').strip()
     system_only = request.args.get('system_only') == '1'
+    source = request.args.get('source', '')
+    group = request.args.get('group', '')
+    category = request.args.get('category', '')
+    alert = request.args.get('alert', '')
+    severity = request.args.get('severity', '')
+
+    # If system_only is set and group is not, set group to 'service'
+    if not group and system_only:
+        group = 'service'
 
     # Manage pagination for alerts
     page_size = 200
     total_logs = logger.count_alerts(
         search=search,
-        group='service' if system_only else None
+        source=source,
+        group=group,
+        category=category,
+        alert=alert,
+        severity=severity,
     )
     total_pages = (total_logs + page_size - 1) // page_size
 
@@ -228,8 +241,18 @@ def alerts():
         offset=(page_number - 1) * page_size,
         limit=page_size,
         search=search,
-        group='service' if system_only else None
+        source=source,
+        group=group,
+        category=category,
+        alert=alert,
+        severity=severity,
     )
+
+    # Extract unique values for each field
+    source_list = sorted({event[1] for event in alerts})
+    group_list = sorted({event[2] for event in alerts})
+    category_list = sorted({event[3] for event in alerts})
+    alert_list = sorted({event[4] for event in alerts})
 
     return render_template(
         'alerts.html',
@@ -238,6 +261,11 @@ def alerts():
         page=page_number,
         total_logs=total_logs,
         total_pages=total_pages,
+        source_list=source_list,
+        group_list=group_list,
+        category_list=category_list,
+        alert_list=alert_list,
+        severity_list=['debug', 'info', 'warning', 'error', 'critical'],
         request=request,
     )
 
