@@ -185,12 +185,23 @@ def about():
     Displays Flask version, Python version, and debug mode status.
     '''
 
+    # Check if the Azure service account is authenticated
+    response = requests.get("http://security:5100/api/token", timeout=3)
+    if response.status_code == 200:
+        logging.debug("Azure service account is authenticated")
+        logged_in = True
+    else:
+        logging.warning("Azure service account is not authenticated")
+        logged_in = False
+
     return render_template(
         'about.html',
         title="About",
         flask_version=flask_version,
         python_version=sys.version,
-        debug_mode=True
+        debug_mode=True,
+        service_account=current_app.config['GLOBAL_CONFIG']['teams']['user'],
+        logged_in=logged_in,
     )
 
 

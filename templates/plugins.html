@@ -25,6 +25,18 @@
 -->
 <script src="{{ url_for('static', filename='js/registerplugins.js') }}"></script>
 
+<script>
+function toggleSecretVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input.type === "password") {
+        input.type = "text";
+        btn.innerHTML = '<i class="fa fa-eye-slash"></i>';
+    } else {
+        input.type = "password";
+        btn.innerHTML = '<i class="fa fa-eye"></i>';
+    }
+}
+</script>
 
 <div id="config-message" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;min-width:200px;text-align:center;padding:12px 24px;border-radius:6px;font-weight:bold;font-size:1.1em;"></div>
 <h1>Plugins</h1>
@@ -78,7 +90,12 @@
         <!-- Webhook - Secret -->
         <label><b>Webhook Secret:</b>
             <p class="w3-small w3-text-grey">Secret to validate webhook messages (optional)</p>
-            <input class="w3-input w3-border w3-margin" type="text" name="secret">
+            <div style="display: flex; align-items: center;">
+                <input class="w3-input w3-border w3-margin" type="password" name="secret" id="register-secret" style="flex:1;">
+                <button type="button" class="w3-button w3-light-grey w3-margin-left" onclick="toggleSecretVisibility('register-secret', this)">
+                    <i class="fa fa-eye"></i>
+                </button>
+            </div>
         </label>
 
         <!-- Webhook - Allowed IPs -->
@@ -182,7 +199,12 @@
         <!-- Webhook - Secret -->
         <label><b>Webhook Secret:</b>
             <p class="w3-small w3-text-grey">Secret to validate webhook messages (optional)</p>
-            <input class="w3-input w3-border w3-margin" type="text" name="secret" value="{{ plugin.webhook.secret or '' }}">
+            <div style="display: flex; align-items: center;">
+                <input class="w3-input w3-border w3-margin" type="password" name="secret" id="configure-secret-{{ loop.index }}" style="flex:1;">
+                <button type="button" class="w3-button w3-light-grey w3-margin-left" onclick="toggleSecretVisibility('configure-secret-{{ loop.index }}', this)">
+                    <i class="fa fa-eye"></i>
+                </button>
+            </div>
         </label>
 
         <!-- Webhook - Allowed IPs -->

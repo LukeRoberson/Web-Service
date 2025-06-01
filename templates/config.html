@@ -50,10 +50,12 @@
 
     <form id="azure-form" class="w3-container w3-padding-16">
         <!-- Tenant ID - String -->
-        <label>Tenant ID</label>
-        <p class="w3-small w3-text-grey">Azure Tenant ID (used with Auth and Teams)</p>
-        <input class="w3-input w3-border" type="text" name="tenant_id"
-            value="{{ config['azure']['tenant-id'] if config['azure']['tenant-id'] is defined else '' }}" required>
+        <label>
+            Tenant ID
+            <p class="w3-small w3-text-grey">Azure Tenant ID (used with Auth and Teams)</p>
+            <input class="w3-input w3-border" type="text" name="tenant_id"
+                value="{{ config['azure']['tenant-id'] if config['azure']['tenant-id'] is defined else '' }}" required>
+        </label>
     </form>
 
     <!-- Save button -->
@@ -81,38 +83,48 @@
 
     <form id="auth-form" class="w3-container w3-padding-16">
         <!-- App ID - String -->
-        <label>App ID</label>
-        <p class="w3-small w3-text-grey">App ID for authentication. May be different from the Teams app</p>
-        <input class="w3-input w3-border w3-padding" type="text" name="auth_app_id"
-            value="{{ config['authentication']['app-id'] if config['authentication']['app-id'] is defined else '' }}" required>
+        <label>
+            App ID
+            <p class="w3-small w3-text-grey">App ID for authentication. May be different from the Teams app</p>
+            <input class="w3-input w3-border w3-padding" type="text" name="auth_app_id"
+                value="{{ config['authentication']['app-id'] if config['authentication']['app-id'] is defined else '' }}" required>
+        </label>
         <br>
 
         <!-- App Secret - The secret for the azure app - This gets encrypted -->
-        <label>App Secret</label>
-        <p class="w3-small w3-text-grey">Plaintext can be added here. This will be encrypted and will update the salt</p>
-        <input class="w3-input w3-border" type="text" placeholder="App Secret" name="auth_app_secret"
-            value="{{ config['authentication']['app-secret'] if config['authentication']['app-secret'] is defined else '' }}" required>
+        <label>
+            App Secret
+            <p class="w3-small w3-text-grey">Plaintext can be added here. This will be encrypted and will update the salt</p>
+            <input class="w3-input w3-border" type="text" placeholder="App Secret" name="auth_app_secret"
+                value="{{ config['authentication']['app-secret'] if config['authentication']['app-secret'] is defined else '' }}" required>
+        </label>
         <br>
 
         <!-- Salt - The salt for the encrypted secret -->
-        <label>Salt</label>
-        <p class="w3-small w3-text-grey">The salt that was generated when the password was encrypted</p>
-        <input class="w3-input w3-border" type="text" name="auth_salt"
-            value="{{ config['authentication']['salt'] if config['authentication']['salt'] is defined else '' }}">
+        <label>
+            Salt
+            <p class="w3-small w3-text-grey">The salt that was generated when the password was encrypted</p>
+            <input class="w3-input w3-border" type="text" name="auth_salt"
+                value="{{ config['authentication']['salt'] if config['authentication']['salt'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- Redirect URI - The URL to redirect to after authentication -->
-        <label>Redirect URI</label>
-        <p class="w3-small w3-text-grey">The callback URL that Azure calls during authentication</p>
-        <input class="w3-input w3-border" type="text" name="auth_redirect_uri"
-            value="{{ config['authentication']['redirect-uri'] if config['authentication']['redirect-uri'] is defined else '' }}" required>
+        <label>
+            Redirect URI
+            <p class="w3-small w3-text-grey">The callback URL that Azure calls during authentication</p>
+            <input class="w3-input w3-border" type="text" name="auth_redirect_uri"
+                value="{{ config['authentication']['redirect-uri'] if config['authentication']['redirect-uri'] is defined else '' }}" required>
+        </label>
         <br>
 
         <!-- Admin Group - The Azure group ID for admin users -->
-        <label>Admin Group</label>
-        <p class="w3-small w3-text-grey">The group in Azure that can access this app</p>
-        <input class="w3-input w3-border" type="text" name="auth_admin_group"
-            value="{{ config['authentication']['admin-group'] if config['authentication']['admin-group'] is defined else '' }}" required>
+        <label>
+            Admin Group
+            <p class="w3-small w3-text-grey">The group in Azure that can access this app</p>
+            <input class="w3-input w3-border" type="text" name="auth_admin_group"
+                value="{{ config['authentication']['admin-group'] if config['authentication']['admin-group'] is defined else '' }}" required>
+        </label>
         <br>
     </form>
 
@@ -144,59 +156,75 @@
 
     <form id="teams-form" class="w3-container w3-padding-16">
         <!-- App ID -->
-        <label>App ID</label>
-        <p class="w3-small w3-text-grey">The ID for the Teams app. This may be different to the authentication app</p>
-        <input class="w3-input w3-border w3-padding" type="text" name="teams_app_id"
-            value="{{ config['teams']['app-id'] if config['teams']['app-id'] is defined else '' }}">
+        <label>
+            App ID
+            <p class="w3-small w3-text-grey">The ID for the Teams app. This may be different to the authentication app</p>
+            <input class="w3-input w3-border w3-padding" type="text" name="teams_app_id"
+                value="{{ config['teams']['app-id'] if config['teams']['app-id'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- App Secret - The secret for the azure app - This gets encrypted -->
-        <label>App Secret</label>
-        <p class="w3-small w3-text-grey">Enter in plain text. This will be encrypted and the salt will be updated</p>
-        <input class="w3-input w3-border" type="text" name="teams_app_secret"
-            value="{{ config['teams']['app-secret'] if config['teams']['app-secret'] is defined else '' }}">
+        <label>
+            App Secret
+            <p class="w3-small w3-text-grey">Enter in plain text. This will be encrypted and the salt will be updated</p>
+            <input class="w3-input w3-border" type="text" name="teams_app_secret"
+                value="{{ config['teams']['app-secret'] if config['teams']['app-secret'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- Salt - The salt for the encrypted secret -->
-        <label>Salt</label>
-        <p class="w3-small w3-text-grey">The salt for the encrypted password</p>
-        <input class="w3-input w3-border" type="text" name="teams_salt"
-            value="{{ config['teams']['salt'] if config['teams']['salt'] is defined else '' }}">
+        <label>
+            Salt
+            <p class="w3-small w3-text-grey">The salt for the encrypted password</p>
+            <input class="w3-input w3-border" type="text" name="teams_salt"
+                value="{{ config['teams']['salt'] if config['teams']['salt'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- Base URL - The base URL for the API -->
-        <label>Base URL</label>
-        <p class="w3-small w3-text-grey">The base URL for the Graph API (Azure API)</p>
-        <input class="w3-input w3-border" type="text" name="teams_base_url"
-            value="{{ config['teams']['base-url'] if config['teams']['base-url'] is defined else '' }}">
+        <label>
+            Base URL
+            <p class="w3-small w3-text-grey">The base URL for the Graph API (Azure API)</p>
+            <input class="w3-input w3-border" type="text" name="teams_base_url"
+                value="{{ config['teams']['base-url'] if config['teams']['base-url'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- User Name - The user name of the chat bot -->
-        <label>User Name</label>
-        <p class="w3-small w3-text-grey">The user name for the chatbot</p>
-        <input class="w3-input w3-border" type="text" name="teams_user_name"
-            value="{{ config['teams']['user'] if config['teams']['user'] is defined else '' }}">
+        <label>
+            User Name
+            <p class="w3-small w3-text-grey">The user name for the chatbot</p>
+            <input class="w3-input w3-border" type="text" name="teams_user_name"
+                value="{{ config['teams']['user'] if config['teams']['user'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- User ID - The chat bot's ID in Azure -->
-        <label>User ID</label>
-        <p class="w3-small w3-text-grey">The chat bot's user ID in Azure</p>
-        <input class="w3-input w3-border" type="text" name="teams_user_id"
-            value="{{ config['teams']['user-id'] if config['teams']['user-id'] is defined else '' }}">
+        <label>
+            User ID
+            <p class="w3-small w3-text-grey">The chat bot's user ID in Azure</p>
+            <input class="w3-input w3-border" type="text" name="teams_user_id"
+                value="{{ config['teams']['user-id'] if config['teams']['user-id'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- Public Key - Public Key file for chats -->
-        <label>Public Key (file)</label>
-        <p class="w3-small w3-text-grey">The filename for the public key. Used when sending/receiving messages</p>
-        <input class="w3-input w3-border" type="text" name="teams_public_key"
-            value="{{ config['teams']['public-key'] if config['teams']['public-key'] is defined else '' }}">
+        <label>
+            Public Key (file)
+            <p class="w3-small w3-text-grey">The filename for the public key. Used when sending/receiving messages</p>
+            <input class="w3-input w3-border" type="text" name="teams_public_key"
+                value="{{ config['teams']['public-key'] if config['teams']['public-key'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- Private Key - Private Key file for chats -->
-        <label>Private Key (file)</label>
-        <p class="w3-small w3-text-grey">The filename for the private key. Corresponds to the public key</p>
-        <input class="w3-input w3-border" type="text" name="teams_private_key"
-            value="{{ config['teams']['private-key'] if config['teams']['private-key'] is defined else '' }}">
+        <label>
+            Private Key (file)
+            <p class="w3-small w3-text-grey">The filename for the private key. Corresponds to the public key</p>
+            <input class="w3-input w3-border" type="text" name="teams_private_key"
+                value="{{ config['teams']['private-key'] if config['teams']['private-key'] is defined else '' }}">
+        </label>
         <br>
     </form>
 

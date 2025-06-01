@@ -21,6 +21,7 @@
     ==========================================================================
 -->
 <div class="w3-container w3-responsive w3-card w3-padding-16">
+    <h3>Application Information</h3>
     <table class="w3-table w3-striped">
         <tr>
             <th>Python version</th>
@@ -40,6 +41,42 @@
 
 <!--
     ==========================================================================
+    Azure Service Account Status
+    --------------------------------------------------------------------------
+    - Shows the login status of the Azure service account
+    ==========================================================================
+-->
+<div class="w3-container w3-responsive w3-card w3-padding-16">
+    <h3>Azure Service Account Status</h3>
+    
+    <!-- Table to show status -->
+    <table class="w3-table w3-striped">
+        <tr>
+            <th>Service Account</th>
+            <td>{{ service_account }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>
+                {% if logged_in %}
+                    <span class="w3-badge w3-green">↑</span>
+                {% else %}
+                    <span class="w3-badge w3-red">↓</span>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <!-- Button to log in if not logged in -->
+    {% if not logged_in %}
+        <button class="w3-button w3-green" onclick="window.location.href='/login?prompt=login';"">Log in Account</button>
+    {% endif %}
+</div>
+<br>
+
+
+<!--
+    ==========================================================================
     Service Status
     --------------------------------------------------------------------------
     - Web Interface
@@ -55,6 +92,8 @@
     ==========================================================================
 -->
 <div class="w3-container w3-responsive w3-card w3-padding-16">
+    <h3>Service Status</h3>
+    <p><i>Dummy data at this time</i></p>
     <table class="w3-table w3-striped">
         <tr>
             <th>Service</th>
