@@ -43,9 +43,7 @@ import sys
 import requests
 
 from systemlog import system_log
-
-
-LOCAL_DOMAIN = 'karen.lakemac.nsw.gov.au'
+from urllib.parse import urlparse
 
 
 # Create a Flask blueprint for the web routes
@@ -188,6 +186,11 @@ def about():
     Displays Flask version, Python version, and debug mode status.
     '''
 
+    # Get the URL that was entered and extract the domain part
+    entered_url = request.url
+    parsed_url = urlparse(entered_url)
+    entered_domain = parsed_url.hostname
+
     # Check if the Azure service account is authenticated
     response = requests.get("http://security:5100/api/token", timeout=3)
     if response.status_code == 200:
@@ -197,7 +200,7 @@ def about():
         logging.warning("Azure service account is not authenticated")
         logged_in = False
 
-    service_login_url = f"https://{LOCAL_DOMAIN}/login?prompt=login"
+    service_login_url = f"https://{entered_domain}/login?prompt=login"
 
     return render_template(
         'about.html',
