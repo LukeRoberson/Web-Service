@@ -59,6 +59,14 @@ body.dark-mode .w3-table {
     color: #e0e0e0 !important;
 }
 
+html.dark-mode .w3-modal-content,
+body.dark-mode .w3-modal-content,
+html.dark-mode .w3-modal .w3-card-4,
+body.dark-mode .w3-modal .w3-card-4 {
+    background-color: #333;
+}
+
+
 html.dark-mode th, html.dark-mode td,
 body.dark-mode th, body.dark-mode td {
     background: #23272a !important;

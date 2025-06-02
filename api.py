@@ -168,8 +168,7 @@ def api_config():
     Returns:
         JSON response indicating success.
     """
-    logging.info("Global config requested through API")
-    logging.info("GLOBAL_CONFIG: %s", current_app.config['GLOBAL_CONFIG'])
+    logging.debug("Global config requested through API")
 
     # Get the config, refresh the configuration
     app_config = current_app.config['GLOBAL_CONFIG']

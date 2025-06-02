@@ -45,6 +45,9 @@ import requests
 from systemlog import system_log
 
 
+LOCAL_DOMAIN = 'karen.lakemac.nsw.gov.au'
+
+
 # Create a Flask blueprint for the web routes
 web_routes = Blueprint(
     'web_routes',
@@ -194,6 +197,8 @@ def about():
         logging.warning("Azure service account is not authenticated")
         logged_in = False
 
+    service_login_url = f"https://{LOCAL_DOMAIN}/login?prompt=login"
+
     return render_template(
         'about.html',
         title="About",
@@ -202,6 +207,7 @@ def about():
         debug_mode=True,
         service_account=current_app.config['GLOBAL_CONFIG']['teams']['user'],
         logged_in=logged_in,
+        service_login_url=service_login_url,
     )
 
 

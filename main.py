@@ -21,7 +21,6 @@ from config import PluginConfig, GlobalConfig
 from alerts import AlertLogger
 from api import web_api
 from web import web_routes
-from systemlog import system_log
 
 
 # Load the configuration
@@ -42,7 +41,6 @@ plugin_list = PluginConfig()
 plugin_list.load_config()
 
 logging.info("%s plugins loaded", len(plugin_list))
-system_log.log(f"{len(plugin_list)} plugins loaded")
 
 for plugin in plugin_list:
     logging.debug(

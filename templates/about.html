@@ -69,10 +69,53 @@
 
     <!-- Button to log in if not logged in -->
     {% if not logged_in %}
-        <button class="w3-button w3-green" onclick="window.location.href='/login?prompt=login';"">Log in Account</button>
+        <button class="w3-button w3-green"
+            onclick="document.getElementById('serviceAccountModal').style.display='block';"
+        >
+            Log in Account
+        </button>
     {% endif %}
 </div>
 <br>
+
+<!-- Service Account login modal -->
+<div id="serviceAccountModal" class="w3-modal w3-responsive" style="display: none;">
+    <div class="w3-modal-content w3-animate-top w3-card-4">
+        <!-- Modal header -->
+        <header class="w3-container w3-light-grey">
+            <span
+                onclick="document.getElementById('serviceAccountModal').style.display='none';"
+                class="w3-button w3-display-topright"
+            >
+                &times;
+            </span>
+            <h2>Service Account Login</h2>
+        </header>
+
+        <div class="w3-container w3-padding-16 w3-margin">
+            <p>To login with the service account, you will need to open a private/incognito window.</p>
+            <p>This is to prevent overwriting your local session</p>
+            <p>In the private window, browse to:</p>
+            <input
+                type="text"
+                readonly
+                value="{{ service_login_url }}",
+                style="width: 100%;"
+                onclick="this.select();"
+            />
+        </div>
+
+        <!-- Close button -->
+        <footer class="w3-container w3-light-grey w3-padding-16">
+            <button
+                class="w3-button w3-light-grey"
+                onclick="document.getElementById('serviceAccountModal').style.display='none';"
+            >
+                Close
+            </button>
+        </footer>
+    </div>
+</div>
 
 
 <!--
