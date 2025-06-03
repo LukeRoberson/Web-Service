@@ -398,7 +398,7 @@ def tools():
 
         # Check the response
         if response.status_code == 200:
-            logging.info("/tools: Chat list response: %s", response.text)
+            logging.debug("/tools: Chat list response: %s", response.text)
             chat_list = response.json().get('chats', [])
 
         # Bad response from the API
