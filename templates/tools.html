@@ -5,6 +5,7 @@
     - Useful tools for diagnostics and maintenance
     - Encrypt a string
     - Decrypt a string
+    - Get a list of chats
     ==========================================================================
 -->
 
@@ -13,8 +14,16 @@
 
 <h1>Tools</h1>
 
-<!-- Encrypt a string -->
-<div class="w3-container w3-responsive w3-card w3-margin">
+<!-- 
+    ==========================================================================
+    Encrypt a string
+    --------------------------------------------------------------------------
+    - Input a plain text string to encrypt
+    - Button to submit the string to the security service (API call)
+    - Display the encrypted string and salt (returned by the security service)
+    ==========================================================================
+ -->
+<div class="w3-container w3-responsive w3-card">
     <header class="w3-container w3-light-grey">
         <h3>Encrypt</h3>
     </header>
@@ -43,8 +52,16 @@
     {% endif %}
 </div>
 
-<!-- Decrypt a string -->
-<div class="w3-container w3-responsive w3-card w3-margin">
+<!-- 
+    ==========================================================================
+    Decrypt a string
+    --------------------------------------------------------------------------
+    - Input an encrypted string and corresponding salt
+    - Button to submit the string to the security service (API call)
+    - Display the plain text string (returned by the security service)
+    ==========================================================================
+ -->
+<div class="w3-container w3-responsive w3-card">
     <header class="w3-container w3-light-grey">
         <h3>Decrypt</h3>
     </header>
@@ -78,6 +95,48 @@
     {% endif %}
 
 </div>
+
+<!-- 
+    ==========================================================================
+    Get a list of chats
+    --------------------------------------------------------------------------
+    - Finds a list of chats from the teams service (for the service account)
+    ==========================================================================
+ -->
+<div class="w3-container w3-responsive w3-card">
+    <header class="w3-container w3-light-grey">
+        <h3>Chat List</h3>
+    </header>
+
+    {% for chat in chat_list %}
+    <div class="w3-container w3-margin">
+        <table class="w3-table w3-striped">
+            <tr>
+                <th>Chat ID:</th>
+                <td>{{ chat.id }}</td>
+            </tr>
+            <tr>
+                <th>Topic:</th>
+                <td>{{ chat.topic }}</td>
+            </tr>
+            {% for member in chat.members %}
+            <tr>
+                <th>Member:</th>
+                <td>{{ member.display_name }}; {{ member.email }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <th>Type:</th>
+                <td>{{ chat.chat_type }}</td>
+            </tr>
+            <tr>
+                <th>Web URL:</th>
+                <td><a href="{{ chat.web_url }}" target="_blank">{{ chat.web_url }}</a></td>
+            </tr>
+    </div>
+    {% endfor %}
+</div>
+
 
 </br></br>
 {% endblock %}

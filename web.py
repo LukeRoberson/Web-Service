@@ -169,7 +169,6 @@ def config():
     # Get the config object and refresh contents
     app_config = current_app.config['GLOBAL_CONFIG']
     app_config.load_config()
-    logging.info("Config loaded: %s", app_config.config)
 
     return render_template(
         'config.html',
@@ -194,12 +193,13 @@ def about():
     # Check if the Azure service account is authenticated
     response = requests.get("http://security:5100/api/token", timeout=3)
     if response.status_code == 200:
-        logging.debug("Azure service account is authenticated")
+        logging.debug("/about: Azure service account is authenticated")
         logged_in = True
     else:
-        logging.warning("Azure service account is not authenticated")
+        logging.warning("/about: Azure service account is not authenticated")
         logged_in = False
 
+    # Get the login URL for the service account
     service_login_url = f"https://{entered_domain}/login?prompt=login"
 
     return render_template(
@@ -391,6 +391,24 @@ def tools():
             else:
                 decrypt_error = str(e)
 
+    # Fetch the chat list from the Teams API
+    chat_list = []
+    try:
+        response = requests.get('http://teams:5100/api/chat_list', timeout=5)
+
+        # Check the response
+        if response.status_code == 200:
+            logging.info("/tools: Chat list response: %s", response.text)
+            chat_list = response.json().get('chats', [])
+
+        # Bad response from the API
+        else:
+            logging.warning("Failed to fetch chat list: %s", response.text)
+
+    # API error handling
+    except Exception as e:
+        logging.error("Error accessing the chat list API:\n%s", e)
+
     # Display the page
     return render_template(
         'tools.html',
@@ -399,6 +417,7 @@ def tools():
         encrypt_error=encrypt_error,
         decrypt_plain=decrypt_plain,
         decrypt_error=decrypt_error,
+        chat_list=chat_list,
     )
 
 
