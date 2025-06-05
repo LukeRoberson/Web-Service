@@ -14,6 +14,7 @@ from flask import (
 )
 from flask_session import Session
 import requests
+from requests.exceptions import RequestException
 import os
 import logging
 
@@ -80,19 +81,33 @@ def make_dynamic_webhook_handler(plugin_name, ip_list):
             f"from IP: {src}"
         )
 
-        # Proxy the webhook request to the plugin
-        response = requests.post(
-            f"http://{plugin_name}:5000/webhook",
-            data=request.get_data(),
-            headers=headers,
-        )
+        try:
+            # Proxy the webhook request to the plugin
+            response = requests.post(
+                f"http://{plugin_name}:5000/webhook",
+                data=request.get_data(),
+                headers=headers,
+            )
 
-        # Proxy the response back to the original request
-        return (
-            response.content,
-            response.status_code,
-            response.headers.items()
-        )
+            # Proxy the response back to the original request
+            return (
+                response.content,
+                response.status_code,
+                response.headers.items()
+            )
+
+        # Handle problems, such as the plugin hasn't started yet
+        except RequestException as e:
+            logging.error(
+                f"Failed to reach {plugin_name} plugin.\n"
+                f"It may not have started yet\n"
+                f"{e}"
+            )
+            return (
+                "Service is not available",
+                503,
+                {'Content-Type': 'text/plain'}.items()
+            )
 
     return handle_dynamic_webhook
 
