@@ -206,6 +206,27 @@ def index() -> str:
 
 
 @web_routes.route(
+    '/close',
+    methods=['GET']
+)
+def close() -> Response:
+    '''
+    The page to display when the service account has logged in.
+    This just tells them that the service account is logged in
+        and they can close the page.
+
+    Returns:
+        Response: A redirect to the home page.
+    '''
+
+    # Redirect to the home page
+    return render_template(
+        'close.html',
+        title="Close",
+    )
+
+
+@web_routes.route(
     '/config',
     methods=['GET']
 )
