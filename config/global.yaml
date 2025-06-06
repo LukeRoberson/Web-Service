@@ -16,11 +16,9 @@ sql:
 teams:
   app-id: Azure App ID for Teams
   app-secret: Azure App Secret for Teams
-  base-url: https://your-teams-base-url
   private-key: Private key file for Teams
   public-key: Public key file for Teams
   salt: Randomly generated salt for Teams
   user: Azure AD user for Teams
-  user-id: Azure AD user ID for Teams
 web:
   logging-level: info

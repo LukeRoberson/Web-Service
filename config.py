@@ -232,8 +232,8 @@ class GlobalConfig:
                 "app-id", "app-secret", "salt", "redirect-uri", "admin-group"
             ],
             "teams": [
-                "app-id", "app-secret", "salt", "base-url", "user",
-                "user-id", "public-key", "private-key"
+                "app-id", "app-secret", "salt", "user",
+                "public-key", "private-key"
             ],
             "sql": [
                 "server", "port", "database", "username", "password", "salt"
@@ -296,14 +296,8 @@ class GlobalConfig:
             self.config['teams']['salt'] = (
                 config['teams_salt']
             )
-            self.config['teams']['base-url'] = (
-                config['teams_base_url']
-            )
             self.config['teams']['user'] = (
                 config['teams_user_name']
-            )
-            self.config['teams']['user-id'] = (
-                config['teams_user_id']
             )
             self.config['teams']['public-key'] = (
                 config['teams_public_key']

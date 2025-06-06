@@ -21,22 +21,14 @@
         - Register a new plugin
         - Update an existing plugin
         - Delete a plugin
+
+    masksecret.js:
+        - Toggle visibility of the secret input field
+        - Mask the secret input field
     ==========================================================================
 -->
 <script src="{{ url_for('static', filename='js/registerplugins.js') }}"></script>
-
-<script>
-function toggleSecretVisibility(inputId, btn) {
-    const input = document.getElementById(inputId);
-    if (input.type === "password") {
-        input.type = "text";
-        btn.innerHTML = '<i class="fa fa-eye-slash"></i>';
-    } else {
-        input.type = "password";
-        btn.innerHTML = '<i class="fa fa-eye"></i>';
-    }
-}
-</script>
+<script src="{{ url_for('static', filename='js/masksecret.js') }}"></script>
 
 <div id="config-message" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;min-width:200px;text-align:center;padding:12px 24px;border-radius:6px;font-weight:bold;font-size:1.1em;"></div>
 <h1>Plugins</h1>
@@ -72,26 +64,26 @@ function toggleSecretVisibility(inputId, btn) {
         <!-- Name -->
         <label><b>Plugin Name:</b>
             <p class="w3-small w3-text-grey">This must match the service name in the Docker compose file, and the 'name' field in the plugin specific config file</p>
-            <input class="w3-input w3-border w3-margin" type="text" name="name" required>
+            <input class="w3-input w3-border w3-margin" type="text" name="name" required autocomplete="off">
         </label>
         
         <!-- Description -->
         <label><b>Description:</b>
             <p class="w3-small w3-text-grey">A friendly description</p>
-            <input class="w3-input w3-border w3-margin" type="text" name="description" required>
+            <input class="w3-input w3-border w3-margin" type="text" name="description" required autocomplete="off">
         </label>
 
         <!-- Webhook - URL -->
         <label><b>Webhook URL:</b>
             <p class="w3-small w3-text-grey">Webhook destination. Will append to /plugin/[Name]</p>
-            <input class="w3-input w3-border w3-margin" type="text" name="url" required>
+            <input class="w3-input w3-border w3-margin" type="text" name="url" required autocomplete="off">
         </label>
 
         <!-- Webhook - Secret -->
         <label><b>Webhook Secret:</b>
             <p class="w3-small w3-text-grey">Secret to validate webhook messages (optional)</p>
             <div style="display: flex; align-items: center;">
-                <input class="w3-input w3-border w3-margin" type="password" name="secret" id="register-secret" style="flex:1;">
+                <input class="w3-input w3-border w3-margin" type="password" name="secret" id="register-secret" style="flex:1;" autocomplete="off">
                 <button type="button" class="w3-button w3-light-grey w3-margin-left" onclick="toggleSecretVisibility('register-secret', this)">
                     <i class="fa fa-eye"></i>
                 </button>
@@ -101,7 +93,7 @@ function toggleSecretVisibility(inputId, btn) {
         <!-- Webhook - Allowed IPs -->
         <label><b>Webhook - Allowed Source IPs:</b>
             <p class="w3-small w3-text-grey">IP's allowed to send webhooks here (0.0.0.0 for any source)</p>
-            <input class="w3-input w3-border w3-margin" type="text" name="ip" value="0.0.0.0">
+            <input class="w3-input w3-border w3-margin" type="text" name="ip" value="0.0.0.0" autocomplete="off">
         </label>
     </form>
     
@@ -181,26 +173,26 @@ function toggleSecretVisibility(inputId, btn) {
         <!-- Name -->
         <label><b>Plugin Name:</b>
             <p class="w3-small w3-text-grey">This must match the service name in the Docker compose file</p>
-            <input class="w3-input w3-border w3-margin" type="text" name="name" value="{{ plugin.name or '' }}">
+            <input class="w3-input w3-border w3-margin" type="text" name="name" value="{{ plugin.name or '' }}" autocomplete="off">
         </label>
 
         <!-- Description -->
         <label><b>Description:</b>
             <p class="w3-small w3-text-grey">A friendly description</p>
-            <input class="w3-input w3-border w3-margin" type="text" name="description" value="{{ plugin.description or '' }}">
+            <input class="w3-input w3-border w3-margin" type="text" name="description" value="{{ plugin.description or '' }}" autocomplete="off">
         </label>
 
         <!-- Webhook - URL -->
         <label><b>Webhook URL:</b>
             <p class="w3-small w3-text-grey">Webhook destination. Will append to /plugin/[Name]</p>
-            <input class="w3-input w3-border w3-margin" type="text" name="url" value="{{ plugin.webhook.url or '' }}">
+            <input class="w3-input w3-border w3-margin" type="text" name="url" value="{{ plugin.webhook.url or '' }}" autocomplete="off">
         </label>
 
         <!-- Webhook - Secret -->
         <label><b>Webhook Secret:</b>
             <p class="w3-small w3-text-grey">Secret to validate webhook messages (optional)</p>
             <div style="display: flex; align-items: center;">
-                <input class="w3-input w3-border w3-margin" type="password" name="secret" id="configure-secret-{{ loop.index }}" style="flex:1;">
+                <input class="w3-input w3-border w3-margin" type="password" name="secret" id="configure-secret-{{ loop.index }}" style="flex:1;" autocomplete="off">
                 <button type="button" class="w3-button w3-light-grey w3-margin-left" onclick="toggleSecretVisibility('configure-secret-{{ loop.index }}', this)">
                     <i class="fa fa-eye"></i>
                 </button>
@@ -210,7 +202,7 @@ function toggleSecretVisibility(inputId, btn) {
         <!-- Webhook - Allowed IPs -->
         <label><b>Webhook - Allowed Source IPs:</b>
             <p class="w3-small w3-text-grey">IP's allowed to send webhooks here (0.0.0.0 for any source)</p>
-            <input class="w3-input w3-border w3-margin" type="text" name="ip" value="{{ plugin.webhook['allowed-ip'] | join(',') or '' }}">
+            <input class="w3-input w3-border w3-margin" type="text" name="ip" value="{{ plugin.webhook['allowed-ip'] | join(',') or '' }}" autocomplete="off">
         </label>
     </form>
     

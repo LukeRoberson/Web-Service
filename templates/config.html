@@ -26,9 +26,14 @@
     saveconfig.js:
         - Collects configuration data from the form
         - Sends the data to the web interface
+
+    masksecret.js:
+        - Toggles visibility of secret input fields
+        - Masks the secret input fields
     ==========================================================================
 -->
 <script src="{{ url_for('static', filename='js/saveconfig.js') }}"></script>
+<script src="{{ url_for('static', filename='js/masksecret.js') }}"></script>
 
 
 <div id="config-message" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;min-width:200px;text-align:center;padding:12px 24px;border-radius:6px;font-weight:bold;font-size:1.1em;"></div>
@@ -95,19 +100,18 @@
         <label>
             App Secret
             <p class="w3-small w3-text-grey">Plaintext can be added here. This will be encrypted and will update the salt</p>
-            <input class="w3-input w3-border" type="text" placeholder="App Secret" name="auth_app_secret"
-                value="{{ config['authentication']['app-secret'] if config['authentication']['app-secret'] is defined else '' }}" required>
+            <div style="display: flex; align-items: center;">
+                <input class="w3-input w3-border" type="password" placeholder="App Secret" name="auth_app_secret" id="auth-app-secret"
+                    value="{{ config['authentication']['app-secret'] if config['authentication']['app-secret'] is defined else '' }}" required>
+                <button type="button" class="w3-button w3-light-grey w3-margin-left" onclick="toggleSecretVisibility('auth-app-secret', this)">
+                    <i class="fa fa-eye"></i>
+            </div>
         </label>
         <br>
 
         <!-- Salt - The salt for the encrypted secret -->
-        <label>
-            Salt
-            <p class="w3-small w3-text-grey">The salt that was generated when the password was encrypted</p>
-            <input class="w3-input w3-border" type="text" name="auth_salt"
-                value="{{ config['authentication']['salt'] if config['authentication']['salt'] is defined else '' }}">
-        </label>
-        <br>
+        <input type="hidden" name="auth_salt"
+            value="{{ config['authentication']['salt'] if config['authentication']['salt'] is defined else '' }}">
 
         <!-- Redirect URI - The URL to redirect to after authentication -->
         <label>
@@ -168,27 +172,18 @@
         <label>
             App Secret
             <p class="w3-small w3-text-grey">Enter in plain text. This will be encrypted and the salt will be updated</p>
-            <input class="w3-input w3-border" type="text" name="teams_app_secret"
-                value="{{ config['teams']['app-secret'] if config['teams']['app-secret'] is defined else '' }}">
+            <div style="display: flex; align-items: center;">
+                <input class="w3-input w3-border" type="password" name="teams_app_secret" id="teams-app-secret"
+                    value="{{ config['teams']['app-secret'] if config['teams']['app-secret'] is defined else '' }}">
+                <button type="button" class="w3-button w3-light-grey w3-margin-left" onclick="toggleSecretVisibility('teams-app-secret', this)">
+                    <i class="fa fa-eye"></i>
+            </div>
         </label>
         <br>
 
         <!-- Salt - The salt for the encrypted secret -->
-        <label>
-            Salt
-            <p class="w3-small w3-text-grey">The salt for the encrypted password</p>
-            <input class="w3-input w3-border" type="text" name="teams_salt"
-                value="{{ config['teams']['salt'] if config['teams']['salt'] is defined else '' }}">
-        </label>
-        <br>
-
-        <!-- Base URL - The base URL for the API -->
-        <label>
-            Base URL
-            <p class="w3-small w3-text-grey">The base URL for the Graph API (Azure API)</p>
-            <input class="w3-input w3-border" type="text" name="teams_base_url"
-                value="{{ config['teams']['base-url'] if config['teams']['base-url'] is defined else '' }}">
-        </label>
+        <input type="hidden" name="teams_salt"
+            value="{{ config['teams']['salt'] if config['teams']['salt'] is defined else '' }}">
         <br>
 
         <!-- User Name - The user name of the chat bot -->
@@ -197,15 +192,6 @@
             <p class="w3-small w3-text-grey">The user name for the chatbot</p>
             <input class="w3-input w3-border" type="text" name="teams_user_name"
                 value="{{ config['teams']['user'] if config['teams']['user'] is defined else '' }}">
-        </label>
-        <br>
-
-        <!-- User ID - The chat bot's ID in Azure -->
-        <label>
-            User ID
-            <p class="w3-small w3-text-grey">The chat bot's user ID in Azure</p>
-            <input class="w3-input w3-border" type="text" name="teams_user_id"
-                value="{{ config['teams']['user-id'] if config['teams']['user-id'] is defined else '' }}">
         </label>
         <br>
 
@@ -255,46 +241,57 @@
 
     <form id="sql-form" class="w3-container w3-padding-16">
         <!-- Server -->
-        <label>Server</label>
-        <p class="w3-small w3-text-grey">SQL server name</p>
-        <input class="w3-input w3-border w3-padding" type="text" name="sql_server"
-            value="{{ config['sql']['server'] if config['sql']['server'] is defined else '' }}">
+        <label>
+            Server
+            <p class="w3-small w3-text-grey">SQL server name</p>
+            <input class="w3-input w3-border w3-padding" type="text" name="sql_server"
+                value="{{ config['sql']['server'] if config['sql']['server'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- Port -->
-        <label>Port</label>
-        <p class="w3-small w3-text-grey">SQL server port</p>
-        <input class="w3-input w3-border w3-padding" type="text" name="sql_port"
-            value="{{ config['sql']['port'] if config['sql']['port'] is defined else '' }}">
+        <label>
+            Port
+            <p class="w3-small w3-text-grey">SQL server port</p>
+            <input class="w3-input w3-border w3-padding" type="text" name="sql_port"
+                value="{{ config['sql']['port'] if config['sql']['port'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- Database -->
-        <label>Database</label>
-        <p class="w3-small w3-text-grey">Database name</p>
-        <input class="w3-input w3-border w3-padding" type="text" name="sql_database"
-            value="{{ config['sql']['database'] if config['sql']['database'] is defined else '' }}">
+        <label>
+            Database
+            <p class="w3-small w3-text-grey">Database name</p>
+            <input class="w3-input w3-border w3-padding" type="text" name="sql_database"
+                value="{{ config['sql']['database'] if config['sql']['database'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- Username (Service Account) -->
-        <label>Username</label>
-        <p class="w3-small w3-text-grey">Service Account that can access the database</p>
-        <input class="w3-input w3-border w3-padding" type="text" name="sql_username"
-            value="{{ config['sql']['username'] if config['sql']['username'] is defined else '' }}">
+        <label>
+            Username
+            <p class="w3-small w3-text-grey">Service Account that can access the database</p>
+            <input class="w3-input w3-border w3-padding" type="text" name="sql_username"
+                value="{{ config['sql']['username'] if config['sql']['username'] is defined else '' }}">
+        </label>
         <br>
 
         <!-- Password - This will be encrypted -->
-        <label>Password</label>
-        <p class="w3-small w3-text-grey">Enter in plain text. This will be encrypted and the salt will be updated</p>
-        <input class="w3-input w3-border w3-padding" type="text" name="sql_password"
-            value="{{ config['sql']['password'] if config['sql']['password'] is defined else '' }}">
+        <label>
+            Password
+            <p class="w3-small w3-text-grey">Enter in plain text. This will be encrypted and the salt will be updated</p>
+            <div style="display: flex; align-items: center;">
+                <input class="w3-input w3-border w3-padding" type="password" name="sql_password" id="sql_password"
+                    value="{{ config['sql']['password'] if config['sql']['password'] is defined else '' }}">
+            <button type="button" class="w3-button w3-light-grey w3-margin-left" onclick="toggleSecretVisibility('sql_password', this)">
+                <i class="fa fa-eye"></i>
+            </div>
+        </label>
         <br>
 
         <!-- Salt - Goes with encrypted password -->
-        <label>Salt</label>
-        <p class="w3-small w3-text-grey">The salt corresponding to the encrypted password</p>
-        <input class="w3-input w3-border w3-padding" type="text" name="sql_salt"
+        <input type="hidden" name="sql_salt"
             value="{{ config['sql']['salt'] if config['sql']['salt'] is defined else '' }}">
-        <br>
     </form>
 
     <!-- Save button -->
