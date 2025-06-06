@@ -42,27 +42,15 @@
 
     paginate.js:
         - Adds pagination functionality to the table
+
+    alertfiltering.js:
+        - Adds advanced filtering options for the alerts
     ==========================================================================
 -->
 <script src="{{ url_for('static', filename='js/autorefresh.js') }}"></script>
 <script src="{{ url_for('static', filename='js/sorttable.js') }}"></script>
 <script src="{{ url_for('static', filename='js/paginate.js') }}"></script>
-        
-<script>
-    function toggleFiltering() {
-        var panel = document.getElementById('filtering-panel');
-        var caret = document.getElementById('filtering-caret');
-        if (panel.style.display === 'none' || panel.style.display === '') {
-            panel.style.display = 'block';
-            caret.classList.remove('fa-caret-down');
-            caret.classList.add('fa-caret-up');
-        } else {
-            panel.style.display = 'none';
-            caret.classList.remove('fa-caret-up');
-            caret.classList.add('fa-caret-down');
-        }
-    }
-</script>
+<script src="{{ url_for('static', filename='js/alertfiltering.js') }}"></script>
 
 
 <!--
@@ -130,12 +118,20 @@
             </span>
 
             <!-- Pagination controls -->
+            <button onclick="goToPage(1)" {% if page <= 1 %}disabled{% endif %} title="First page">
+                <i class="fa fa-angle-double-left"></i>
+            </button>
             <button onclick="goToPage('{{ page - 1 }}')" {% if page <= 1 %}disabled{% endif %} title="Previous page">
                 <i class="fa fa-chevron-left"></i>
             </button>
+            
             <span style="margin: 0 8px;">Page {{ page }} of {{ total_pages }}</span>
+            
             <button onclick="goToPage('{{ page + 1 }}')" {% if page >= total_pages %}disabled{% endif %} title="Next page">
                 <i class="fa fa-chevron-right"></i>
+            </button>
+            <button onclick="goToPage('{{ total_pages }}')" {% if page >= total_pages %}disabled{% endif %} title="Last page">
+                <i class="fa fa-angle-double-right"></i>
             </button>
         </div>
     </div>
