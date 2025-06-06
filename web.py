@@ -1,6 +1,8 @@
 """
-Web module.
-    Provides routes for the web UI.
+Module: web.py
+
+Provides the web routes for the web service. This is the WebUI that users
+    interact with.
 
 Functions:
     - verify_auth_token:
@@ -21,6 +23,19 @@ Routes:
         Alerts page to display recent alerts.
     - /plugins:
         Plugins page to manage plugins.
+    - /tools:
+        Tools page for useful utilities.
+
+Dependencies:
+    - Flask: For creating the web application.
+    - itsdangerous: For token verification.
+    - requests: For making HTTP requests to external services.
+    - urllib.parse: For parsing URLs.
+    - logging: For logging errors and warnings.
+    - functools: For creating decorators.
+
+Custom Dependencies:
+    - systemlog: For logging system messages.
 """
 
 
@@ -32,18 +47,19 @@ from flask import (
     render_template,
     jsonify,
     redirect,
+    Response,
     __version__ as flask_version,
 )
 
 from functools import wraps
 from itsdangerous import URLSafeTimedSerializer
 import logging
-from typing import Optional
+from typing import Optional, Callable, Any
 import sys
 import requests
+from urllib.parse import urlparse
 
 from systemlog import system_log
-from urllib.parse import urlparse
 
 
 # Create a Flask blueprint for the web routes
@@ -94,8 +110,10 @@ def verify_auth_token(
         return None
 
 
-def protected(f):
-    '''
+def protected(
+    f: Callable[..., Any]
+) -> Callable[..., Any]:
+    """
     Decorator to protect a route with authentication.
     Checks if the user is logged in and has admin permissions.
 
@@ -105,10 +123,33 @@ def protected(f):
         If a token is found, it verifies the token and stores
             the user in the session.
         If the user is not authenticated, it redirects to the auth page.
-    '''
+
+    Args:
+        f (callable): The function to decorate.
+
+    Returns:
+        callable: The decorated function that checks authentication.
+    """
 
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated_function(
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        """
+        Inner function to handle the authentication check.
+        Checks if the user is in the session or providing a token.
+        If the user is authenticated, it calls the original function.
+        If the user is not authenticated, it redirects to the auth page.
+
+        Args:
+            *args: Positional arguments for the original function.
+            **kwargs: Keyword arguments for the original function.
+
+        Returns:
+            Response: The response from the original function if authenticated,
+        """
+
         # Check if there's a token in the request
         token = request.args.get('token')
 
@@ -148,22 +189,34 @@ def protected(f):
     return decorated_function
 
 
-@web_routes.route('/')
-def index():
+@web_routes.route(
+    '/',
+    methods=['GET']
+)
+def index() -> str:
     '''
     Just so a home page exists.
     Some external security services require a home page to be present.
+
+    Returns:
+        str: A simple message indicating the home page.
     '''
 
     return "I'd like to speak to the manager!"
 
 
-@web_routes.route('/config')
+@web_routes.route(
+    '/config',
+    methods=['GET']
+)
 @protected
-def config():
+def config() -> Response:
     '''
     Route to display the configuration page.
     Gets global configuration and passes it to the template.
+
+    Returns:
+        Rendered template for the configuration page.
     '''
 
     # Get the config object and refresh contents
@@ -177,12 +230,20 @@ def config():
     )
 
 
-@web_routes.route('/about')
+@web_routes.route(
+    '/about',
+    methods=['GET']
+)
 @protected
-def about():
+def about() -> Response:
     '''
     Route to display the about page.
-    Displays Flask version, Python version, and debug mode status.
+    Displays various useful information about the application
+    Allows the user to see if the Azure service account is authenticated.
+        Also provides a link to the service account login page.
+
+    Returns:
+        Rendered template for the about page with application information.
     '''
 
     # Get the URL that was entered and extract the domain part
@@ -191,10 +252,18 @@ def about():
     entered_domain = parsed_url.hostname
 
     # Check if the Azure service account is authenticated
-    response = requests.get("http://security:5100/api/token", timeout=3)
+    try:
+        response = requests.get("http://security:5100/api/token", timeout=3)
+
+    except Exception as e:
+        logging.error(
+            "Failed to check Azure service account authentication: %s", e
+        )
+
     if response.status_code == 200:
         logging.debug("/about: Azure service account is authenticated")
         logged_in = True
+
     else:
         logging.warning("/about: Azure service account is not authenticated")
         logged_in = False
@@ -214,9 +283,12 @@ def about():
     )
 
 
-@web_routes.route('/alerts')
+@web_routes.route(
+    '/alerts',
+    methods=['GET']
+)
 @protected
-def alerts():
+def alerts() -> Response:
     '''
     Route to display the alerts page.
     Gets the recent alerts from the logger and passes them to the template.
@@ -224,6 +296,9 @@ def alerts():
     The alerts are paginated, with a default page size of 200.
     The total number of alerts and pages is calculated.
     The page number is taken from the request arguments, defaulting to 1.
+
+    Returns:
+        Rendered template for the alerts page with recent alerts and filters.
     '''
 
     # Get the logger object from the current app config
@@ -291,13 +366,19 @@ def alerts():
     )
 
 
-@web_routes.route('/plugins')
+@web_routes.route(
+    '/plugins',
+    methods=['GET']
+)
 @protected
-def plugins():
+def plugins() -> Response:
     '''
     Route to display the plugins page.
     Gets the plugin list object from the app config and refreshes its contents.
     Passes the plugin configuration to the template.
+
+    Returns:
+        Rendered template for the plugins page with plugin configuration.
     '''
 
     # Get the plugin list object, and refresh its contents
@@ -317,14 +398,17 @@ def plugins():
     methods=['GET', 'POST']
 )
 @protected
-def tools():
+def tools() -> Response:
     '''
     Route to display the tools page.
-    Provides a simple encryption/decryption tool
+    Includes utilities of use.
 
     Methods:
         GET: Display the tool page as normal
         POST: Process the form submission to encrypt/decrypt
+
+    Returns:
+        Rendered template for the tools page.
     '''
 
     encrypt_encrypted = encrypt_salt = encrypt_error = None

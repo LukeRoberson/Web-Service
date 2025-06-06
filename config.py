@@ -1,34 +1,45 @@
 """
-Module for reading and maintaining the configuration of the web service.
+Module: config.py
+
+Loads and manages global and plugin configurations for the web service.
 
 Functions:
     - validate_ip_addresses(ip_addresses: list[str]) -> bool:
-        Validates a list of IP addresses.
-    - send_log(message: str, url: str, source: str, destination: list,
-        group: str, category: str, alert: str, severity: str) -> None:
-        Sends a message to the logging service.
+        Validates a list of IP addresses are in valid IP format.
 
 Classes:
     - GlobalConfig:
         Manage global app configuration
-
     - PluginConfig:
         Manages plugins; Add, configure, and delete plugins
+
+Dependancies:
+    - yaml: For reading and writing YAML configuration files.
+    - urllib.parse: For URL encoding.
+    - ipaddress: For validating IP addresses.
+    - logging: For logging messages.
+
+Custom Dependancies:
+    - systemlog: For sending logs to the logging service.
 """
 
 import yaml
 import urllib.parse
-from typing import Any
+from typing import Any, Iterator
 import logging
 import ipaddress
 
 from systemlog import system_log
 
 
+DEFAULT_CONFIG_FILE = "config/global.yaml"
+DEFAULT_PLUGIN_FILE = "config/plugins.yaml"
+
+
 def validate_ip_addresses(
     ip_addresses: list[str]
 ) -> bool:
-    '''
+    """
     Validates a list of IP addresses.
 
     Args:
@@ -36,7 +47,7 @@ def validate_ip_addresses(
 
     Returns:
         bool: True if all IP addresses are valid, False otherwise.
-    '''
+    """
 
     try:
         for address in ip_addresses:
@@ -48,48 +59,27 @@ def validate_ip_addresses(
 
 
 class GlobalConfig:
-    '''
-    GlobalConfig class
-    Reads global configuration from a YAML file
-    Stores the values in instance variables
+    """
+    Reads global configuration from a YAML file, and stores the values
+        in instance variables
 
-    Methods:
-        __init__(file_path):
-            Initializes the GlobalConfig object.
-
-        __getitem__(key):
-            Magic method to get an item from the config dictionary.
-
-        __setitem__(key, value):
-            Magic method to set an item in the config dictionary.
-
-        __repr__():
-            Magic method to represent the GlobalConfig object as a string.
-
-        __str__():
-            Magic method to convert the GlobalConfig object to a string.
-
-        _validate_sections(config, section_requirements):
-            Validate required sections and keys in the config.
-
-        load_config():
-            Loads the configuration from the YAML file.
-
-        update_config(config):
-            Updates the configuration with a new dictionary.
-    '''
+    Args:
+        file_name (str): Path to the YAML configuration file.
+    """
 
     def __init__(
         self,
-        file_name="config/global.yaml",
+        file_name: str = DEFAULT_CONFIG_FILE,
     ) -> None:
-        '''
-        Class constructor
-        Prepares variables
+        """
+        Prepare the config dictionary and file path.
 
         Args:
             file_path (str): Path to the YAML configuration file.
-        '''
+
+        Returns:
+            None
+        """
 
         # Prepare the config
         self.config_file = file_name
@@ -99,7 +89,7 @@ class GlobalConfig:
         self,
         key: str
     ) -> Any:
-        '''
+        """
         Magic method to get an item from the config dictionary.
 
         Args:
@@ -107,7 +97,7 @@ class GlobalConfig:
 
         Returns:
             Any: The value associated with the specified key.
-        '''
+        """
 
         return self.config[key]
 
@@ -116,37 +106,46 @@ class GlobalConfig:
         key: str,
         value: Any,
     ) -> None:
-        '''
+        """
         Magic method to set an item in the config dictionary.
 
         Args:
             key (str): Key of the item to be set.
             value (Any): Value to be set for the specified key.
-        '''
+
+        Returns:
+            None
+        """
 
         self.config[key] = value
 
     def __repr__(
         self
     ) -> str:
-        '''
+        """
         Magic method to represent the GlobalConfig object as a string.
+
+        Args:
+            None
 
         Returns:
             str: String representation of the GlobalConfig object.
-        '''
+        """
 
         return f"<GlobalConfig sections={list(self.config.keys())}>"
 
     def __str__(
         self
     ) -> str:
-        '''
+        """
         Magic method to convert the GlobalConfig object to a string.
 
-                Returns:
+        Args:
+            None
+
+        Returns:
             str: String representation of the GlobalConfig object.
-        '''
+        """
 
         return str(self.config)
 
@@ -162,6 +161,9 @@ class GlobalConfig:
             config (dict): The loaded configuration dictionary.
             section_requirements (dict): Keys are section names,
                 values are lists of required keys.
+
+        Returns:
+            None
 
         Raises:
             ValueError: If a required section or key is missing.
@@ -191,18 +193,24 @@ class GlobalConfig:
     def load_config(
         self,
     ) -> None:
-        '''
+        """
         Loads the configuration from the YAML file.
 
         Reads the YAML file and initializes the instance variables.
         A list of dictionaries is created from the YAML file
-            and stored in the instance variable `self.config`.
+            and stored in the instance variable 'self.config'.
         Validates the config by checking for required sections and keys.
+
+        Args:
+            None
+
+        Returns:
+            None
 
         Raises:
             FileNotFoundError: If the configuration file is not found.
             ValueError: If a required section or key is missing.
-        '''
+        """
 
         # Read the YAML file
         try:
@@ -240,7 +248,7 @@ class GlobalConfig:
         self,
         config: dict,
     ) -> bool:
-        '''
+        """
         Updates the configuration with a new dictionary.
         Only the main section is passed from the UI.
 
@@ -249,7 +257,7 @@ class GlobalConfig:
 
         Returns:
             bool: True if the config updated successfully, False otherwise.
-        '''
+        """
 
         logging.info("Saving global config: %s", config)
 
@@ -356,58 +364,27 @@ class GlobalConfig:
 
 
 class PluginConfig:
-    '''
-    PluginConfig class
-    Reads plugin configuration from a YAML file
-    Stores the values in instance variables
+    """
+    Reads plugin configuration from a YAML file, and stores the values in
+        instance variables
 
-    Methods:
-        __init__(self, file_path):
-            Initializes the PluginConfig object by reading the YAML file
-            and storing the values in instance variables.
-
-        __len__(self):
-            Returns the number of plugins in the config list.
-
-        __getitem__(self, index):
-            Returns the plugin configuration at the specified index.
-
-        __iter__(self):
-            Returns an iterator over the config list.
-
-        __contains__(self, name):
-            Checks if a plugin name exists in the config list.
-
-        __repr__(self):
-            Returns a string representation of the PluginConfig object.
-
-        _validate_plugins(self):
-            Validates that all required fields exist for each plugin.
-
-        load_config(self):
-            Loads the configuration from the YAML file.
-
-        update_config(self, new_config):
-            Updates the configuration with a new list of dictionaries.
-
-        register(self, config):
-            Registers a new plugin by adding it to the configuration.
-
-        delete(self, name):
-            Deletes a plugin from the configuration.
-    '''
+    Args:
+        file_name (str): Path to the YAML configuration file.
+    """
 
     def __init__(
         self,
-        file_name="config/plugins.yaml",
+        file_name=DEFAULT_PLUGIN_FILE,
     ) -> None:
-        '''
-        Class constructor
-        Prepares variables
+        """
+        Prepare the config dictionary and file path.
 
         Args:
             file_path (str): Path to the YAML configuration file.
-        '''
+
+        Returns:
+            None
+        """
 
         # Prepare the config
         self.plugin_file = file_name
@@ -416,19 +393,23 @@ class PluginConfig:
     def __len__(
         self
     ) -> int:
-        '''
+        """
         Magic method to get the length of the config list.
+
+        Args:
+            None
 
         Returns:
             int: The number of plugins in the config list.
-        '''
+        """
+
         return len(self.config)
 
     def __getitem__(
         self,
         index
     ) -> dict:
-        '''
+        """
         Magic method to get an item from the config list by index.
 
         Args:
@@ -436,25 +417,30 @@ class PluginConfig:
 
         Returns:
             dict: The plugin configuration at the specified index.
-        '''
+        """
+
         return self.config[index]
 
     def __iter__(
         self
-    ) -> iter:
-        '''
+    ) -> Iterator[dict]:
+        """
         Magic method to iterate over the config list.
+
+        Args:
+            None
 
         Returns:
             iter: An iterator over the config list.
-        '''
+        """
+
         return iter(self.config)
 
     def __contains__(
         self,
         name
     ) -> bool:
-        '''
+        """
         Magic method to check if a plugin name exists in the config list.
 
         Args:
@@ -462,18 +448,23 @@ class PluginConfig:
 
         Returns:
             bool: True if the plugin name exists, False otherwise.
-        '''
+        """
+
         return any(entry['name'] == name for entry in self.config)
 
     def __repr__(
         self
     ) -> str:
-        '''
+        """
         Magic method to represent the PluginConfig object as a string.
+
+        Args:
+            None
 
         Returns:
             str: String representation of the PluginConfig object.
-        '''
+        """
+
         return f"<PluginConfig plugins={len(self.config)}>"
 
     def _validate_plugins(
@@ -481,8 +472,13 @@ class PluginConfig:
     ) -> None:
         """
         Validates that all required fields exist for each plugin.
-            If there are invalid plugins, they are removed from the config.
-            One bad config entry will not break the whole config.
+            If there are invalid plugins, they are ignored.
+
+        Args:
+            None
+
+        Returns:
+            None
         """
 
         required_fields = ['name', 'description', 'webhook']
@@ -532,7 +528,7 @@ class PluginConfig:
     def load_config(
         self,
     ) -> None:
-        '''
+        """
         Loads the configuration from the YAML file.
 
         Reads the YAML file and initializes the instance variables.
@@ -541,9 +537,15 @@ class PluginConfig:
         Creates a unique route for each plugin by combining the plugin name
             and the webhook URL.
 
+        Args:
+            None
+
+        Returns:
+            None
+
         Raises:
             FileNotFoundError: If the configuration file is not found.
-        '''
+        """
 
         try:
             with open(self.plugin_file, "r", encoding="utf-8") as f:
@@ -560,7 +562,7 @@ class PluginConfig:
         # Validate the plugins
         self._validate_plugins()
 
-        '''
+        """
         Config format:
 
         [
@@ -578,7 +580,7 @@ class PluginConfig:
             },
             {...}
         ]
-        '''
+        """
 
         # Create the full webhook URL
         for entry in self.config:
@@ -597,8 +599,9 @@ class PluginConfig:
     def update_config(
         self,
         new_config: dict,
+        plugin_config: str = DEFAULT_PLUGIN_FILE,
     ) -> bool:
-        '''
+        """
         Updates the configuration with a new list of dictionaries.
 
         Args:
@@ -620,7 +623,7 @@ class PluginConfig:
                     "<IP2>"
                 ]
         }
-        '''
+        """
 
         logging.info("Attempting to update config: %s", new_config)
 
@@ -660,13 +663,22 @@ class PluginConfig:
 
                 # Save the updated config back to the YAML file
                 logging.info("Updated entry: %s", entry)
-                with open("config/plugins.yaml", "w", encoding="utf-8") as f:
-                    yaml.dump(
-                        self.config,
-                        f,
-                        default_flow_style=False,
-                        allow_unicode=True
-                    )
+
+                try:
+                    with open(
+                        plugin_config,
+                        "w",
+                        encoding="utf-8"
+                    ) as f:
+                        yaml.dump(
+                            self.config,
+                            f,
+                            default_flow_style=False,
+                            allow_unicode=True
+                        )
+                except Exception as e:
+                    logging.error("Failed to save config: %s", e)
+                    return False
 
                 # Send to logging service
                 system_log.log(
@@ -685,8 +697,9 @@ class PluginConfig:
     def register(
         self,
         config: dict,
+        plugin_config: str = DEFAULT_PLUGIN_FILE,
     ) -> bool:
-        '''
+        """
         Registers a new plugin by adding it to the configuration.
 
         Args:
@@ -707,7 +720,7 @@ class PluginConfig:
                     "<IP2>"
                 ]
         }
-        '''
+        """
 
         logging.info("Attempting to register plugin: %s", config)
 
@@ -743,13 +756,18 @@ class PluginConfig:
         logging.info("Current config: %s", self.config)
 
         # Save the updated config back to the YAML file
-        with open("config/plugins.yaml", "w", encoding="utf-8") as f:
-            yaml.dump(
-                self.config,
-                f,
-                default_flow_style=False,
-                allow_unicode=True
-            )
+        try:
+            with open(plugin_config, "w", encoding="utf-8") as f:
+                yaml.dump(
+                    self.config,
+                    f,
+                    default_flow_style=False,
+                    allow_unicode=True
+                )
+
+        except Exception as e:
+            logging.error("Failed to save config: %s", e)
+            return False
 
         # Send to logging service
         system_log.log(f"Plugin '{config['name']}' registered successfully.")
@@ -759,8 +777,9 @@ class PluginConfig:
     def delete(
         self,
         name: str,
+        plugin_config: str = DEFAULT_PLUGIN_FILE,
     ) -> bool:
-        '''
+        """
         Deletes a plugin from the configuration.
 
         Args:
@@ -768,7 +787,7 @@ class PluginConfig:
 
         Returns:
             bool: True if the plugin was deleted successfully, False otherwise.
-        '''
+        """
 
         logging.warning(
             "Attempting to delete plugin: %s",
@@ -782,13 +801,22 @@ class PluginConfig:
                 self.config.remove(entry)
 
                 # Save the updated config back to the YAML file
-                with open("config/plugins.yaml", "w", encoding="utf-8") as f:
-                    yaml.dump(
-                        self.config,
-                        f,
-                        default_flow_style=False,
-                        allow_unicode=True
-                    )
+                try:
+                    with open(
+                        plugin_config,
+                        "w",
+                        encoding="utf-8"
+                    ) as f:
+                        yaml.dump(
+                            self.config,
+                            f,
+                            default_flow_style=False,
+                            allow_unicode=True
+                        )
+
+                except Exception as e:
+                    logging.error("Failed to save config: %s", e)
+                    return False
 
                 # Send to logging service
                 system_log.log(

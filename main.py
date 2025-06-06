@@ -1,13 +1,55 @@
 """
+Module: main.py
+
 Main module for starting the web service and setting up the routes.
+This service is responsible for:
+    - The web interface
+    - Loading global configuration
+    - Loading plugins and their configuration
+    - Forwarding webhooks to the appropriate plugins
+    - Displaying live alerts
+
+Module Tasks:
+    1. Load global configuration from the GlobalConfig class.
+    2. Set up logging for the service
+    3. Setup live logging (the /alerts page)
+    4. Load plugin configurations from the PluginConfig class.
+    5. Create a Flask application instance and loading blueprints.
 
 Usage:
-    Run this module to start the web application.
+    This is a Flask application that should run behind a WSGI server inside
+        a Docker container.
+    Build the Docker image and run it with the provided Dockerfile.
 
-Example:
-    $ python main.py
+Functions:
+    - create_webhook_handler:
+        Factory function to create a webhook handler for each plugin.
+    - global_config:
+        Loads the global configuration for the web service.
+    - logging_setup:
+        Sets up the root logger for the web service.
+    - plugin_config:
+        Loads the plugin configuration for the entire app.
+    - create_app:
+        Creates the Flask application instance and sets up the configuration.
+
+Blueprints:
+    - web_api: Handles API endpoints for the web interface.
+    - web_routes: Handles web routes for the web interface.
+
+Dependencies:
+    - Flask: For creating the web application.
+    - Flask-Session: For session management.
+    - requests: For making HTTP requests to plugins.
+    - logging: For logging messages to the terminal.
+
+Custom Dependencies:
+    - GlobalConfig: For loading global configuration.
+    - PluginConfig: For loading plugin configurations.
+    - LiveAlerts: For logging alerts to the web interface.
 """
 
+# Standard library imports
 from flask import (
     Flask,
     request,
@@ -17,57 +59,49 @@ import requests
 from requests.exceptions import RequestException
 import os
 import logging
+from typing import Callable, Optional, Any
 
+# Custom imports
 from config import PluginConfig, GlobalConfig
-from alerts import AlertLogger
+from livealerts import LiveAlerts
 from api import web_api
 from web import web_routes
 
 
-# Load the configuration
-app_config = GlobalConfig()
-app_config.load_config()
+def create_webhook_handler(
+    plugin_name: str,
+    ip_list: Optional[list[str]] = None,
+) -> Callable[[], tuple]:
+    """
+    Create a dynamic webhook handler for a plugin.
+    This function returns a handler that will process incoming webhook
+    requests for a specific plugin
 
-# Set up logging
-log_level_str = app_config.config['web']['logging-level'].upper()
-log_level = getattr(logging, log_level_str, logging.INFO)
-logging.basicConfig(level=log_level)
-print(f"Logging level set to: {log_level_str}")
+    Args:
+        plugin_name (str): The name of the plugin.
+        ip_list (list): List of allowed IP addresses for the webhook.
 
-# Initialise the logging module (for alerts page)
-logger = AlertLogger()
+    Returns:
+        callable: A function that handles the webhook request.
+    """
 
-# Load the plugin configuration
-plugin_list = PluginConfig()
-plugin_list.load_config()
+    def webhook_handler() -> tuple[bytes, int, Any]:
+        '''
+        Handle incoming webhook requests for a specific plugin.
+        One of these functions is created for each plugin
 
-logging.info("%s plugins loaded", len(plugin_list))
+        This effectively makes the web service a proxy for the plugin's
+        webhook endpoint.
+        It forwards the request to the plugin and returns the response.
 
-for plugin in plugin_list:
-    logging.debug(
-        "Plugin '%s' loaded with webhook URL: %s",
-        plugin['name'],
-        plugin['webhook']['safe_url']
-    )
+        Returns:
+            tuple: A tuple containing:
+                - The content of the response from the plugin.
+                - The status code of the response.
+                - The headers of the response.
+        '''
 
-# Create the Flask application
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('api_master_pw')
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['PLUGIN_LIST'] = plugin_list
-app.config['GLOBAL_CONFIG'] = app_config
-app.config['LOGGER'] = logger
-Session(app)
-
-# Register blueprints
-app.register_blueprint(web_api)
-app.register_blueprint(web_routes)
-
-
-# Function Factory - Function to create a function
-# Dynamic webhook handler function per plugin
-def make_dynamic_webhook_handler(plugin_name, ip_list):
-    def handle_dynamic_webhook():
+        # Collects the source IP address and headers
         src = request.remote_addr
         headers = dict(request.headers)
 
@@ -103,43 +137,122 @@ def make_dynamic_webhook_handler(plugin_name, ip_list):
                 f"It may not have started yet\n"
                 f"{e}"
             )
+
+            # This is sent back to the webhook sender
             return (
-                "Service is not available",
+                b"Service is not available",
                 503,
                 {'Content-Type': 'text/plain'}.items()
             )
 
-    return handle_dynamic_webhook
+    return webhook_handler
 
 
-# Dynamically register routes for each plugin
-for plugin in plugin_list:
-    endpoint = f"webhook_{plugin['name']}"
-    allowed_ips = plugin['webhook']['allowed-ip']
+def global_config() -> GlobalConfig:
+    """
+    Load the global configuration for the web service.
+    This function initializes the GlobalConfig class
 
-    # Register the webhook URL
-    #   (1) Use safe URL from the plugin config
-    #   (2) Use the plugin name as the endpoint (the route's name)
-    #   (3) Use the plugin name as the function name
-    #   (4) POST method only
-    app.add_url_rule(
-        plugin['webhook']['safe_url'],
-        endpoint,
-        make_dynamic_webhook_handler(plugin['name'], allowed_ips),
-        methods=['POST']
-    )
+    Returns:
+        GlobalConfig: An instance of the GlobalConfig class with loaded
+            configuration.
+    """
+    config = GlobalConfig()
+    config.load_config()
+    return config
 
 
-'''
-NOTE: When running in a container, the host and port are set in the
-    uWSGI config. uWSGI starts the process, which means the
-    Flask app is not run directly.
-    This can be uncommented for local testing.
-'''
-# if __name__ == "__main__":
-#     # Run the application
-#     app.run(
-#         debug=True,
-#         host='0.0.0.0',
-#         port=5000,
-#     )
+def logging_setup() -> None:
+    """
+    Set up a root logger for the web service.
+    This function configures the logging level based on the global
+    configuration.
+    """
+
+    log_level_str = app_config.config['web']['logging-level'].upper()
+    log_level = getattr(logging, log_level_str, logging.INFO)
+    logging.basicConfig(level=log_level)
+    logging.info("Logging level set to: %s", log_level_str)
+
+
+def plugin_config() -> PluginConfig:
+    """
+    Load the plugin configuration for the entire app.
+
+    Returns:
+        PluginConfig: An instance of the PluginConfig class with loaded
+            plugin configurations.
+    """
+
+    config = PluginConfig()
+    config.load_config()
+
+    logging.info("%s plugins loaded", len(config))
+    for plugin in config:
+        logging.debug(
+            "Plugin '%s' loaded with webhook URL: %s",
+            plugin['name'],
+            plugin['webhook']['safe_url']
+        )
+
+    return config
+
+
+def create_app(
+    plugins: PluginConfig,
+    config: GlobalConfig,
+    alerts: LiveAlerts,
+) -> Flask:
+    """
+    Create the Flask application instance and set up the configuration.
+    Registers the necessary blueprints for the web service.
+
+    Args:
+        plugins (PluginConfig): The plugin configuration object.
+        config (GlobalConfig): The global configuration object.
+        alerts (LiveAlerts): The live alerts object for logging alerts.
+
+    Returns:
+        Flask: The Flask application instance with the necessary
+            configuration and blueprints registered.
+    """
+
+    # Create the Flask application
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = os.getenv('api_master_pw')
+    app.config['SESSION_TYPE'] = 'filesystem'
+    app.config['PLUGIN_LIST'] = plugins
+    app.config['GLOBAL_CONFIG'] = config
+    app.config['LOGGER'] = alerts
+    Session(app)
+
+    # Register blueprints
+    app.register_blueprint(web_api)
+    app.register_blueprint(web_routes)
+
+    # Dynamically register routes for each plugin
+    for plugin in plugins:
+        endpoint = f"webhook_{plugin['name']}"
+        allowed_ips = plugin['webhook']['allowed-ip']
+
+        # Register the webhook URL
+        app.add_url_rule(
+            rule=plugin['webhook']['safe_url'],
+            endpoint=endpoint,
+            view_func=create_webhook_handler(plugin['name'], allowed_ips),
+            methods=['POST']
+        )
+
+    return app
+
+
+# Setup the WebUI service
+app_config = global_config()
+logging_setup()
+live_alerts = LiveAlerts()
+plugin_list = plugin_config()
+app = create_app(
+    plugins=plugin_list,
+    config=app_config,
+    alerts=live_alerts,
+)

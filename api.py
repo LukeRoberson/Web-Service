@@ -1,6 +1,7 @@
 """
-API module.
-    Used for communication between services and the web UI.
+Module: api.py
+
+Adds API endpoints for the web service.
 
 Functions:
     - get_plugin_by_name:
@@ -9,14 +10,22 @@ Functions:
 Blueprint lists routes for the web API. This is registered in main.py
 
 Routes:
-    - /api/test:
-        Test endpoint for health checks.
+    - /api/health:
+        Test endpoint for health checks. Used by Docker
     - /api/plugins:
         Manage plugins (POST to add, PATCH to update, DELETE to remove).
     - /api/config:
         Manage global configuration (GET to retrieve, PATCH to update).
     - /api/webhook:
         Receive webhooks from plugins.
+
+Dependencies:
+    - Flask: For creating the web API.
+    - os: For file operations.
+    - logging: For logging errors and warnings.
+
+Custom Dependencies:
+    - systemlog: For logging system messages.
 """
 
 
@@ -25,12 +34,18 @@ from flask import (
     request,
     jsonify,
     current_app,
+    Response,
 )
 
 import os
 import logging
 from typing import Optional
+
 from systemlog import system_log
+from config import PluginConfig
+
+
+RELOAD_FILE = '/app/reload.txt'
 
 
 # Create a Flask blueprint for the API
@@ -41,7 +56,7 @@ web_api = Blueprint(
 
 
 def get_plugin_by_name(
-    plugin_list,
+    plugin_list: 'PluginConfig',
     plugin_name: str
 ) -> Optional[dict]:
     """
@@ -60,13 +75,17 @@ def get_plugin_by_name(
 
 
 @web_api.route(
-    '/api/test',
+    '/api/health',
     methods=['GET']
 )
-def api_test():
+def health() -> Response:
     '''
     API endpoint to test the web service.
     Called by health checks to verify the service is running.
+
+    Returns:
+        str: Empty string indicating the service is healthy.
+        200: HTTP status code indicating success.
     '''
 
     return '', 200
@@ -76,7 +95,7 @@ def api_test():
     '/api/plugins',
     methods=['GET', 'POST', 'PATCH', 'DELETE']
 )
-def api_plugins():
+def api_plugins() -> Response:
     """
     API endpoint to manage plugins.
     Called by the UI when changes are made.
@@ -86,6 +105,12 @@ def api_plugins():
         POST - Add a new plugin.
         PATCH - Update an existing plugin.
         DELETE - Remove a plugin.
+
+    POST/JSON body should contain the plugin configuration.
+
+    PATCH/JSON body should contain the updated plugin configuration.
+
+    DELETE/JSON body should contain the name of the plugin to remove.
 
     Returns:
         JSON response indicating success.
@@ -145,8 +170,11 @@ def api_plugins():
         )
 
     # If successful, recycle the workers to apply the changes
-    with open('/app/reload.txt', 'a'):
-        os.utime('/app/reload.txt', None)
+    try:
+        with open(RELOAD_FILE, 'a'):
+            os.utime(RELOAD_FILE, None)
+    except Exception as e:
+        logging.error("Failed to update reload.txt: %s", e)
 
     return jsonify(
         {
@@ -159,11 +187,15 @@ def api_plugins():
     '/api/config',
     methods=['GET', 'PATCH']
 )
-def api_config():
+def api_config() -> Response:
     """
     API endpoint to manage global configuration.
+
+    Methods:
         GET - Called by a module to get the current configuration.
         PATCH - Called by the UI when changes are made.
+
+    PATCH/JSON body should contain the updated configuration.
 
     Returns:
         JSON response indicating success.
@@ -200,8 +232,11 @@ def api_config():
             )
 
         # If successful, recycle the workers to apply the changes
-        with open('/app/reload.txt', 'a'):
-            os.utime('/app/reload.txt', None)
+        try:
+            with open(RELOAD_FILE, 'a'):
+                os.utime(RELOAD_FILE, None)
+        except Exception as e:
+            logging.error("Failed to update reload.txt: %s", e)
 
         return jsonify(
             {
@@ -214,11 +249,20 @@ def api_config():
     '/api/webhook',
     methods=['POST']
 )
-def api_webhook():
+def api_webhook() -> Response:
     """
     API endpoint to receive logs from plugins and services.
     Logging service will broker the logs to the appropriate destinations.
     Logging service sends a POST request to this endpoint
+
+    POST/JSON body should contain the following fields:
+        - timestamp: The time the alert was generated.
+        - source: The source of the alert (e.g., plugin name).
+        - group: The group of the alert (e.g., 'service').
+        - category: The category of the alert (e.g., 'web-ui').
+        - alert: The type of alert (e.g., 'system').
+        - severity: The severity of the alert (e.g., 'info', 'warning', etc).
+        - message: The message of the alert.
 
     Returns:
         JSON response indicating success.
