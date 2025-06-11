@@ -62,6 +62,11 @@ from urllib.parse import urlparse
 from systemlog import system_log
 
 
+TOKEN_URL = "http://security:5100/api/token"
+CHAT_LIST_URL = "http://teams:5100/api/chat_list"
+CRYPTO_URL = "http://security:5100/api/crypto"
+
+
 # Create a Flask blueprint for the web routes
 web_routes = Blueprint(
     'web_routes',
@@ -273,7 +278,7 @@ def about() -> Response:
 
     # Check if the Azure service account is authenticated
     try:
-        response = requests.get("http://security:5100/api/token", timeout=3)
+        response = requests.get(TOKEN_URL, timeout=3)
 
     except Exception as e:
         logging.error(
@@ -460,7 +465,7 @@ def tools() -> Response:
 
         try:
             response = requests.post(
-                'http://security:5100/api/crypto',
+                CRYPTO_URL,
                 json={
                     'type': operation,
                     'plain-text': plain,
@@ -498,7 +503,7 @@ def tools() -> Response:
     # Fetch the chat list from the Teams API
     chat_list = []
     try:
-        response = requests.get('http://teams:5100/api/chat_list', timeout=5)
+        response = requests.get(CHAT_LIST_URL, timeout=5)
 
         # Check the response
         if response.status_code == 200:
