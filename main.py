@@ -22,10 +22,10 @@ Usage:
     Build the Docker image and run it with the provided Dockerfile.
 
 Functions:
+    - fetch_global_config:
+        Fetches the global configuration from the core service.
     - create_webhook_handler:
         Factory function to create a webhook handler for each plugin.
-    - global_config:
-        Loads the global configuration for the web service.
     - logging_setup:
         Sets up the root logger for the web service.
     - plugin_config:
@@ -66,6 +66,43 @@ from config import PluginConfig, GlobalConfig
 from livealerts import LiveAlerts
 from api import web_api
 from web import web_routes
+
+
+CONFIG_URL = "http://core:5100/api/config"
+
+
+def fetch_global_config(
+    url: str = CONFIG_URL,
+) -> dict:
+    """
+    Fetch the global configuration from the core service.
+
+    Args:
+        url (str): The URL to fetch the global configuration from.
+
+    Returns:
+        dict: The global configuration loaded from the core service.
+
+    Raises:
+        RuntimeError: If the global configuration cannot be loaded.
+    """
+
+    global_config = None
+    try:
+        response = requests.get(url, timeout=3)
+        response.raise_for_status()
+        global_config = response.json()
+
+    except Exception as e:
+        logging.critical(
+            "Failed to fetch global config from core service."
+            f" Error: {e}"
+        )
+
+    if global_config is None:
+        raise RuntimeError("Could not load global config from core service")
+
+    return global_config['config']
 
 
 def create_webhook_handler(
@@ -148,31 +185,29 @@ def create_webhook_handler(
     return webhook_handler
 
 
-def global_config() -> GlobalConfig:
+def logging_setup(
+    config: dict,
+) -> None:
     """
-    Load the global configuration for the web service.
-    This function initializes the GlobalConfig class
+    Set up the root logger for the web service.
+
+    Args:
+        config (dict): The global configuration dictionary
 
     Returns:
-        GlobalConfig: An instance of the GlobalConfig class with loaded
-            configuration.
-    """
-    config = GlobalConfig()
-    config.load_config()
-    return config
-
-
-def logging_setup() -> None:
-    """
-    Set up a root logger for the web service.
-    This function configures the logging level based on the global
-    configuration.
+        None
     """
 
-    log_level_str = app_config.config['web']['logging-level'].upper()
+    # Get the logging level from the configuration (eg, "INFO")
+    log_level_str = config['web']['logging-level'].upper()
     log_level = getattr(logging, log_level_str, logging.INFO)
-    logging.basicConfig(level=log_level)
-    logging.info("Logging level set to: %s", log_level_str)
+
+    # Set up the logging configuration
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    logging.info("Logging setup complete with level: %s", log_level)
 
 
 def plugin_config() -> PluginConfig:
@@ -248,12 +283,12 @@ def create_app(
 
 
 # Setup the WebUI service
-app_config = global_config()
-logging_setup()
+global_config = fetch_global_config(CONFIG_URL)
+logging_setup(global_config)
 live_alerts = LiveAlerts()
 plugin_list = plugin_config()
 app = create_app(
     plugins=plugin_list,
-    config=app_config,
+    config=global_config,
     alerts=live_alerts,
 )

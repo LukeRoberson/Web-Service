@@ -16,8 +16,6 @@ Routes:
         Test endpoint for health checks. Used by Docker
     - /api/plugins:
         Manage plugins (POST to add, PATCH to update, DELETE to remove).
-    - /api/config:
-        Manage global configuration (GET to retrieve, PATCH to update).
     - /api/webhook:
         Receive webhooks from plugins.
 
@@ -45,9 +43,11 @@ from typing import Optional
 
 from systemlog import system_log
 from config import PluginConfig
+import requests
 
 
 RELOAD_FILE = '/app/reload.txt'
+CONFIG_URL = "http://core:5100/api/config"
 
 
 # Create a Flask blueprint for the API
@@ -202,18 +202,16 @@ def api_config() -> Response:
     Returns:
         JSON response indicating success.
     """
-    logging.debug("Global config requested through API")
 
     # Get the config, refresh the configuration
     app_config = current_app.config['GLOBAL_CONFIG']
-    app_config.load_config()
 
     # GET is used to get the current configuration
     if request.method == 'GET':
         return jsonify(
             {
                 'result': 'success',
-                'config': app_config.config
+                'config': app_config
             }
         )
 
@@ -222,16 +220,21 @@ def api_config() -> Response:
         # The body of the request
         data = request.json
 
-        result = app_config.update_config(data)
-
-        # If this failed...
-        if not result:
-            return jsonify(
-                {
+        # Forward the PATCH request to the core service
+        try:
+            resp = requests.patch(CONFIG_URL, json=data, timeout=5)
+            if resp.status_code != 200:
+                return jsonify({
                     'result': 'error',
-                    'message': 'Failed to update configuration'
-                }
-            )
+                    'message': f'Failed to update configuration: {resp.text}'
+                }), resp.status_code
+
+        except Exception as e:
+            logging.error("Failed to patch core service: %s", e)
+            return jsonify({
+                'result': 'error',
+                'message': f'Failed to update configuration: {e}'
+            }), 500
 
         # If successful, recycle the workers to apply the changes
         try:

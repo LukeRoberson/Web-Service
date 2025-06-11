@@ -9,6 +9,9 @@
 */
 
 
+const CONFIG_URL = '/api/config';
+
+
 /**
  * Saves the configuration from the specified form.
  * This gets configuration from each category (not the entire page).
@@ -57,7 +60,7 @@ function saveConfig(formId) {
     }
 
     // API call to save the configuration
-    fetch('/api/config', {
+    fetch(CONFIG_URL, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json'

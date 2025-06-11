@@ -240,14 +240,13 @@ def config() -> Response:
         Rendered template for the configuration page.
     '''
 
-    # Get the config object and refresh contents
+    # Get the config object
     app_config = current_app.config['GLOBAL_CONFIG']
-    app_config.load_config()
 
     return render_template(
         'config.html',
         title="Config",
-        config=app_config.config,
+        config=app_config,
     )
 
 
