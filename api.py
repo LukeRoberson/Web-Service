@@ -7,7 +7,9 @@ Functions:
     - get_plugin_by_name:
         Find a plugin's configuration by its name.
 
-Blueprint lists routes for the web API. This is registered in main.py
+Blueprints:
+    - web_api: A Flask blueprint that handles API endpoints for
+        the web interface.
 
 Routes:
     - /api/health:

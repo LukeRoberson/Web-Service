@@ -221,6 +221,7 @@ def create_app(
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.getenv('api_master_pw')
     app.config['SESSION_TYPE'] = 'filesystem'
+    app.config['SESSION_FILE_DIR'] = '/app/flask_session'
     app.config['PLUGIN_LIST'] = plugins
     app.config['GLOBAL_CONFIG'] = config
     app.config['LOGGER'] = alerts
