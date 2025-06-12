@@ -12,144 +12,22 @@ body {
     background: #f8f9fa;
 }
 
-/* For small screens */
-nav {
-    flex-wrap: wrap;
-}
-@media (max-width: 600px) {
-    .w3-card-4, .w3-container {
-        margin: 0 !important;
-        padding: 8px !important;
-    }
-    h1, h3, h4 {
-        font-size: 1.2em !important;
-    }
-    table, th, td {
-        font-size: 0.95em !important;
-    }
-    .w3-table {
-        display: block;
-        overflow-x: auto;
-        width: 100%;
-    }
+
+/* Style the main content area: width, margin, background, padding, border radius, and shadow */
+main {
+    max-width: 800px;
+    margin: 2em auto;
+    background: #fff;
+    padding: 2em;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-
-/*
-==========================================================================
-   Dark Mode
-==========================================================================
-*/
-html.dark-mode body,
-body.dark-mode {
-    background: #181a1b;
-    color: #e0e0e0;
+.w3-badge[title] {
+    cursor: pointer;
+    user-select: none;
 }
 
-html.dark-mode a
-body.dark-mode a { color: #80cbc4; }
-
-html.dark-mode .w3-container,
-body.dark-mode .w3-container,
-html.dark-mode .w3-card,
-body.dark-mode .w3-card,
-html.dark-mode .w3-table,
-body.dark-mode .w3-table {
-    background: #23272a !important;
-    color: #e0e0e0 !important;
-}
-
-html.dark-mode .w3-modal-content,
-body.dark-mode .w3-modal-content,
-html.dark-mode .w3-modal .w3-card-4,
-body.dark-mode .w3-modal .w3-card-4 {
-    background-color: #333;
-}
-
-
-html.dark-mode th, html.dark-mode td,
-body.dark-mode th, body.dark-mode td {
-    background: #23272a !important;
-    color: #e0e0e0 !important;
-}
-
-html.dark-mode nav, html.dark-mode header,
-body.dark-mode nav, body.dark-mode header {
-    background: #23272a !important;
-}
-
-html.dark-mode main,
-body.dark-mode main {
-    background: #23272a !important;
-    color: #e0e0e0 !important;
-}
-
-html.dark-mode span,
-body.dark-mode span {
-    color: #e0e0e0 !important;
-}
-
-html.dark-mode #filtering-panel,
-body.dark-mode #filtering-panel {
-    background: #23272e !important;
-    color: #e0e0e0 !important;
-}
-
-html.dark-mode #filtering-panel select,
-body.dark-mode #filtering-panel select,
-html.dark-mode #filtering-panel input,
-body.dark-mode #filtering-panel input,
-html.dark-mode #filtering-panel label,
-body.dark-mode #filtering-panel label {
-    background: #23272e !important;
-    color: #e0e0e0 !important;
-    border-color: #444 !important;
-}
-
-html.dark-mode .w3-table {
-    background: #181a20 !important;
-    color: #e0e0e0 !important;
-}
-
-html.dark-mode .w3-table th,
-html.dark-mode .w3-table td {
-    background: #23272e !important;
-    color: #e0e0e0 !important;
-}
-
-
-/* Dark mode toggle switch */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-  vertical-align: middle;
-}
-.switch input { display: none; }
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #ccc;
-  transition: .4s;
-  border-radius: 24px;
-}
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px; width: 18px;
-  left: 3px; bottom: 3px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-input:checked + .slider {
-  background-color: #2196F3;
-}
-input:checked + .slider:before {
-  transform: translateX(20px);
-}
 
 
 /*
@@ -192,19 +70,25 @@ nav a:hover {
 }
 
 
-/*
-==========================================================================
-   Main Content Area
-==========================================================================
-*/
-
-/* Style the main content area: width, margin, background, padding, border radius, and shadow */
-main {
-    max-width: 800px;
-    margin: 2em auto;
-    background: #fff;
-    padding: 2em;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+/* For small screens */
+nav {
+    flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+    .w3-card-4, .w3-container {
+        margin: 0 !important;
+        padding: 8px !important;
+    }
+    h1, h3, h4 {
+        font-size: 1.2em !important;
+    }
+    table, th, td {
+        font-size: 0.95em !important;
+    }
+    .w3-table {
+        display: block;
+        overflow-x: auto;
+        width: 100%;
+    }
 }
 

@@ -1,0 +1,78 @@
+/* 
+==========================================================================
+   Nice CSS for tooltips
+   - Used in about.html
+   - Nicely displays more information about an item
+==========================================================================
+*/
+
+
+/* ==========================================================================
+   Tooltips - Light and Dark Mode Support
+   ========================================================================== */
+
+.info-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.info-tooltip-content {
+    display: none;
+    position: absolute;
+    left: 50%;
+    bottom: 120%;
+    transform: translateX(-50%);
+    background: #fff;                /* Light mode background */
+    color: #222;                     /* Light mode text */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    padding: 10px 16px;
+    min-width: 350px;
+    max-width: 800px;
+    width: max-content;
+    z-index: 9999;
+    white-space: normal;
+    font-size: 0.95em;
+    pointer-events: none;
+}
+
+.w3-container, .w3-card {
+    overflow: visible !important;
+}
+
+.info-tooltip:hover .info-tooltip-content {
+    display: block;
+    pointer-events: auto;
+}
+
+.info-tooltip-content table {
+    border-collapse: collapse;
+    width: 100%;
+    background: transparent;
+}
+.info-tooltip-content th {
+    color: #888;
+    width: 70px;
+    text-align: left;
+    font-weight: normal;
+}
+.info-tooltip-content td {
+    text-align: left;
+    padding-left: 8px;
+}
+
+/* =========================
+   Dark Mode Overrides
+   ========================= */
+html.dark-mode .info-tooltip-content,
+body.dark-mode .info-tooltip-content {
+    background: #222e3a;
+    color: #f1f1f1;
+    border: 1px solid #444a55;
+}
+
+html.dark-mode .info-tooltip-content th,
+body.dark-mode .info-tooltip-content th {
+    color: #b0b8c1;
+}

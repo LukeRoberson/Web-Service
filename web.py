@@ -41,21 +41,20 @@ Custom Dependencies:
 
 from flask import (
     Blueprint,
+    Response,
     current_app,
     request,
     session,
     render_template,
     jsonify,
     redirect,
-    Response,
-    __version__ as flask_version,
+    make_response,
 )
 
 from functools import wraps
 from itsdangerous import URLSafeTimedSerializer
 import logging
-from typing import Optional, Callable, Any
-import sys
+from typing import Optional, Callable, Any, cast
 import requests
 from urllib.parse import urlparse
 
@@ -65,6 +64,7 @@ from systemlog import system_log
 TOKEN_URL = "http://security:5100/api/token"
 CHAT_LIST_URL = "http://teams:5100/api/chat_list"
 CRYPTO_URL = "http://security:5100/api/crypto"
+CONTAINER_URL = "http://core:5100/api/containers"
 
 
 # Create a Flask blueprint for the web routes
@@ -163,7 +163,7 @@ def protected(
         #   Verify that the token is valid
         if 'user' not in session and token:
             # Get the secret key from the app config
-            secret_key = current_app.config.get('SECRET_KEY')
+            secret_key = current_app.config.get('SECRET_KEY', '')
 
             # Verify the token
             user = verify_auth_token(token, secret_key)
@@ -184,8 +184,11 @@ def protected(
         # User is not authenticated
         #   Neither in the session nor providing a token
         elif "user" not in session:
-            return redirect(
-                f"/auth?redirect={request.url}"
+            return cast(
+                Response,
+                redirect(
+                    f"/auth?redirect={request.url}"
+                )
             )
 
         # User is already authenticated (user is in the session)
@@ -225,9 +228,11 @@ def close() -> Response:
     '''
 
     # Redirect to the home page
-    return render_template(
-        'close.html',
-        title="Close",
+    return make_response(
+        render_template(
+            'close.html',
+            title="Close",
+        )
     )
 
 
@@ -248,10 +253,12 @@ def config() -> Response:
     # Get the config object
     app_config = current_app.config['GLOBAL_CONFIG']
 
-    return render_template(
-        'config.html',
-        title="Config",
-        config=app_config,
+    return make_response(
+        render_template(
+            'config.html',
+            title="Config",
+            config=app_config,
+        )
     )
 
 
@@ -271,12 +278,22 @@ def about() -> Response:
         Rendered template for the about page with application information.
     '''
 
+    # Make an API call to the container service to get container info
+    try:
+        container_response = requests.get(CONTAINER_URL, timeout=3)
+        print("Container response:", container_response.json())
+        container_status = container_response.json()['services']
+    except Exception as e:
+        logging.error("Error fetching container info: %s", e)
+        container_status = None
+
     # Get the URL that was entered and extract the domain part
     entered_url = request.url
     parsed_url = urlparse(entered_url)
     entered_domain = parsed_url.hostname
 
     # Check if the Azure service account is authenticated
+    response = None
     try:
         response = requests.get(TOKEN_URL, timeout=3)
 
@@ -285,7 +302,7 @@ def about() -> Response:
             "Failed to check Azure service account authentication: %s", e
         )
 
-    if response.status_code == 200:
+    if response and response.status_code == 200:
         logging.debug("/about: Azure service account is authenticated")
         logged_in = True
 
@@ -296,15 +313,18 @@ def about() -> Response:
     # Get the login URL for the service account
     service_login_url = f"https://{entered_domain}/login?prompt=login"
 
-    return render_template(
-        'about.html',
-        title="About",
-        flask_version=flask_version,
-        python_version=sys.version,
-        debug_mode=True,
-        service_account=current_app.config['GLOBAL_CONFIG']['teams']['user'],
-        logged_in=logged_in,
-        service_login_url=service_login_url,
+    # Get the service account from the global config
+    service_account = current_app.config['GLOBAL_CONFIG']['teams']['user']
+
+    return make_response(
+        render_template(
+            'about.html',
+            title="About",
+            service_account=service_account,
+            logged_in=logged_in,
+            service_login_url=service_login_url,
+            container_status=container_status,
+        )
     )
 
 
@@ -375,19 +395,21 @@ def alerts() -> Response:
     category_list = sorted({event[3] for event in alerts})
     alert_list = sorted({event[4] for event in alerts})
 
-    return render_template(
-        'alerts.html',
-        title="Alerts",
-        alerts=alerts,
-        page=page_number,
-        total_logs=total_logs,
-        total_pages=total_pages,
-        source_list=source_list,
-        group_list=group_list,
-        category_list=category_list,
-        alert_list=alert_list,
-        severity_list=['debug', 'info', 'warning', 'error', 'critical'],
-        request=request,
+    return make_response(
+        render_template(
+            'alerts.html',
+            title="Alerts",
+            alerts=alerts,
+            page=page_number,
+            total_logs=total_logs,
+            total_pages=total_pages,
+            source_list=source_list,
+            group_list=group_list,
+            category_list=category_list,
+            alert_list=alert_list,
+            severity_list=['debug', 'info', 'warning', 'error', 'critical'],
+            request=request,
+        )
     )
 
 
@@ -411,10 +433,12 @@ def plugins() -> Response:
     plugin_list.load_config()
     logging.info("Plugin list loaded: %s", plugin_list.config)
 
-    return render_template(
-        'plugins.html',
-        title="Plugins",
-        plugins=plugin_list.config,
+    return make_response(
+        render_template(
+            'plugins.html',
+            title="Plugins",
+            plugins=plugin_list.config,
+        )
     )
 
 
@@ -454,13 +478,15 @@ def tools() -> Response:
         else:
             error = "Need either 'plain-text' or 'encrypted' with 'salt'"
             logging.error(error)
-            return render_template(
-                'tools.html',
-                encrypt_encrypted=encrypt_encrypted,
-                encrypt_salt=encrypt_salt,
-                encrypt_error=encrypt_error,
-                decrypt_plain=decrypt_plain,
-                decrypt_error=decrypt_error,
+            return make_response(
+                render_template(
+                    'tools.html',
+                    encrypt_encrypted=encrypt_encrypted,
+                    encrypt_salt=encrypt_salt,
+                    encrypt_error=encrypt_error,
+                    decrypt_plain=decrypt_plain,
+                    decrypt_error=decrypt_error,
+                )
             )
 
         try:
@@ -519,14 +545,16 @@ def tools() -> Response:
         logging.error("Error accessing the chat list API:\n%s", e)
 
     # Display the page
-    return render_template(
-        'tools.html',
-        encrypt_encrypted=encrypt_encrypted,
-        encrypt_salt=encrypt_salt,
-        encrypt_error=encrypt_error,
-        decrypt_plain=decrypt_plain,
-        decrypt_error=decrypt_error,
-        chat_list=chat_list,
+    return make_response(
+        render_template(
+            'tools.html',
+            encrypt_encrypted=encrypt_encrypted,
+            encrypt_salt=encrypt_salt,
+            encrypt_error=encrypt_error,
+            decrypt_plain=decrypt_plain,
+            decrypt_error=decrypt_error,
+            chat_list=chat_list,
+        )
     )
 
 

@@ -2,42 +2,21 @@
     ==========================================================================
     About Page
     --------------------------------------------------------------------------
-    - Display diagnostic information about the application
+    - Display status of the Azure service account
     - Display the status of the services
     ==========================================================================
 -->
 
 {% extends "base.html" %}
-{% block content %}
-<h1>About</h1>
 
-<!--
-    ==========================================================================
-    Table of information
-    --------------------------------------------------------------------------
-    - Python Version
-    - Flask Version
-    - Flask Debug Mode (True/False)
-    ==========================================================================
--->
-<div class="w3-container w3-responsive w3-card w3-padding-16">
-    <h3>Application Information</h3>
-    <table class="w3-table w3-striped">
-        <tr>
-            <th>Python version</th>
-            <td>{{ python_version }}</td>
-        </tr>
-        <tr>
-            <th>Flask version</th>
-            <td>{{ flask_version }}</td>
-        </tr>
-        <tr>
-            <th>Flask Debug mode</th>
-            <td>{{ debug_mode }}</td>
-        </tr>
-    </table>
-</div>
-</br>
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tooltips.css') }}">
+{% endblock %}
+
+{% block content %}
+
+
+<h1>About</h1>
 
 <!--
     ==========================================================================
@@ -144,6 +123,15 @@
     - Status: The status of the service (up or down) as a badge (traffic light)
     ==========================================================================
 -->
+{% set expected_services = [
+    {'service_name': 'web-interface', 'display': 'Web Interface'},
+    {'service_name': 'security', 'display': 'Security'},
+    {'service_name': 'logging', 'display': 'Logging'},
+    {'service_name': 'teams', 'display': 'Teams'},
+    {'service_name': 'core', 'display': 'Core Service'},
+    {'service_name': 'scheduler', 'display': 'Scheduler'}
+] %}
+
 <div class="w3-container w3-responsive w3-card w3-padding-16">
     <h3>Service Status</h3>
     <p><i>Dummy data at this time</i></p>
@@ -153,41 +141,39 @@
             <th>Version</th>
             <th>Status</th>
         </tr>
-        <tr>
-            <td>Web Interface</td>
-            <td>0.0.0</td>
-            <td>
-                <span class="w3-badge w3-green">↑</span>
-            </td>
-        </tr>
-        <tr>
-            <td>Security</td>
-            <td>0.0.0</td>
-            <td>
-                <span class="w3-badge w3-green">↑</span>
-            </td>
-        </tr>
-        <tr>
-            <td>Logging</td>
-            <td>0.0.0</td>
-            <td>
-                <span class="w3-badge w3-green">↑</span>
-            </td>
-        </tr>
-        <tr>
-            <td>SQL</td>
-            <td>0.0.0</td>
-            <td>
-                <span class="w3-badge w3-green">↑</span>
-            </td>
-        </tr>
-        <tr>
-            <td>Teams</td>
-            <td>0.0.0</td>
-            <td>
-                <span class="w3-badge w3-green">↑</span>
-            </td>
-        </tr>
+        {% for svc in expected_services %}
+            {% set entry = (container_status | selectattr('service_name', 'equalto', svc.service_name) | list | first) %}
+            <tr>
+                <td>{{ svc.display }}</td>
+                <td>{{ entry.version if entry else '-' }}</td>
+                <td>
+                    {% if entry and entry.health == 'healthy' %}
+                        <span class="w3-badge w3-green" title="Healthy">↑</span>
+                    {% elif entry and entry.health == 'unhealthy' %}
+                        <span class="w3-badge w3-orange" title="Unhealthy">!</span>
+                    {% elif entry and entry.health == 'unknown' %}
+                        <span class="w3-badge w3-grey" title="Unknown">?</span>
+                    {% elif entry and entry.health == 'exited' %}
+                        <span class="w3-badge w3-red" title="Exited">↓</span>
+                    {% else %}
+                        <span class="w3-badge w3-red" title="Down">↓</span>
+                    {% endif %}
+                    {% if entry %}
+                        <span class="info-tooltip">
+                            <span class="fa fa-info-circle w3-text-blue" style="cursor: pointer; margin-left: 8px;"></span>
+                            <span class="info-tooltip-content">
+                                <table>
+                                    <tr><th>Name</th><td>{{ entry.name }}</td></tr>
+                                    <tr><th>Title</th><td>{{ entry.title }}</td></tr>
+                                    <tr><th>Description</th><td>{{ entry.description }}</td></tr>
+                                </table>
+                            </span>
+                        </span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
     </table>
 </div>
+
 {% endblock %}
