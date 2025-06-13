@@ -28,22 +28,23 @@ Custom Dependencies:
     - systemlog: For logging system messages.
 """
 
-
+# Standard library imports
 from flask import (
     Blueprint,
-    request,
-    jsonify,
-    current_app,
     Response,
+    request,
+    current_app,
+    jsonify,
+    make_response
 )
-
 import os
 import logging
 from typing import Optional
+import requests
 
+# Custom imports
 from systemlog import system_log
 from config import PluginConfig
-import requests
 
 
 RELOAD_FILE = '/app/reload.txt'
@@ -90,7 +91,10 @@ def health() -> Response:
         200: HTTP status code indicating success.
     '''
 
-    return '', 200
+    return make_response(
+        '',
+        200
+    )
 
 
 @web_api.route(
@@ -126,12 +130,15 @@ def api_plugins() -> Response:
     if request.method == 'GET':
         plugin_name = request.headers.get('X-Plugin-Name')
         if not plugin_name:
-            return jsonify(
-                {
-                    'result': 'error',
-                    'message': 'Missing X-Plugin-Name header'
-                }
-            ), 400
+            return make_response(
+                jsonify(
+                    {
+                        'result': 'error',
+                        'message': 'Missing X-Plugin-Name header'
+                    }
+                ),
+                400
+            )
 
         plugin = get_plugin_by_name(plugin_list, plugin_name)
         if plugin:
@@ -142,34 +149,59 @@ def api_plugins() -> Response:
 
         system_log.log(
             f"Plugin {plugin_name} not found in configuration",
-            level='error'
+            severity='error'
         )
 
-        return jsonify({
-            'result': 'error',
-            'message': f'Plugin {plugin_name} not found'
-        }), 404
+        return make_response(
+            jsonify(
+                {
+                    'result': 'error',
+                    'message': f'Plugin {plugin_name} not found'
+                }
+            ),
+            404
+        )
 
     # POST is used to add a new plugin
     elif request.method == 'POST':
         result = plugin_list.register(request.json)
 
+        # If this failed...
+        if not result:
+            return jsonify(
+                {
+                    'result': 'error',
+                    'message': 'Failed to update configuration'
+                }
+            )
+
     # PATCH is used to update an existing plugin
     elif request.method == 'PATCH':
         result = plugin_list.update_config(request.json)
 
+        # If this failed...
+        if not result:
+            return jsonify(
+                {
+                    'result': 'error',
+                    'message': 'Failed to update configuration'
+                }
+            )
+
     # DELETE is used to remove a plugin
     elif request.method == 'DELETE':
-        result = plugin_list.delete(request.json['name'])
-
-    # If this failed...
-    if not result:
-        return jsonify(
-            {
-                'result': 'error',
-                'message': 'Failed to update configuration'
-            }
-        )
+        data = request.json
+        if not data or 'name' not in data:
+            return make_response(
+                jsonify(
+                    {
+                        'result': 'error',
+                        'message': 'Missing plugin name in request body'
+                    }
+                ),
+                400
+            )
+        result = plugin_list.delete(data['name'])
 
     # If successful, recycle the workers to apply the changes
     try:
@@ -208,11 +240,13 @@ def api_config() -> Response:
 
     # GET is used to get the current configuration
     if request.method == 'GET':
-        return jsonify(
-            {
-                'result': 'success',
-                'config': app_config
-            }
+        return make_response(
+            jsonify(
+                {
+                    'result': 'success',
+                    'config': app_config
+                }
+            )
         )
 
     # PATCH is used to update config
@@ -224,17 +258,27 @@ def api_config() -> Response:
         try:
             resp = requests.patch(CONFIG_URL, json=data, timeout=5)
             if resp.status_code != 200:
-                return jsonify({
-                    'result': 'error',
-                    'message': f'Failed to update configuration: {resp.text}'
-                }), resp.status_code
+                return make_response(
+                    jsonify(
+                        {
+                            'result': 'error',
+                            'message': f"Failed to update configuration: "
+                            f"{resp.text}"
+                        }
+                    ), resp.status_code
+                )
 
         except Exception as e:
             logging.error("Failed to patch core service: %s", e)
-            return jsonify({
-                'result': 'error',
-                'message': f'Failed to update configuration: {e}'
-            }), 500
+            return make_response(
+                jsonify(
+                    {
+                        'result': 'error',
+                        'message': f'Failed to update configuration: {e}'
+                    }
+                ),
+                500
+            )
 
         # If successful, recycle the workers to apply the changes
         try:
@@ -243,11 +287,25 @@ def api_config() -> Response:
         except Exception as e:
             logging.error("Failed to update reload.txt: %s", e)
 
-        return jsonify(
-            {
-                'result': 'success'
-            }
+        return make_response(
+            jsonify(
+                {
+                    'result': 'success'
+                }
+            ),
+            200
         )
+
+    # If the method is not GET or PATCH, return a 405 Method Not Allowed
+    return make_response(
+        jsonify(
+            {
+                'result': 'error',
+                'message': 'Method not allowed'
+            }
+        ),
+        405
+    )
 
 
 @web_api.route(
@@ -276,6 +334,17 @@ def api_webhook() -> Response:
     # The body of the request
     data = request.json
     logging.debug("Received webhook data: %s", data)
+
+    if data is None:
+        return make_response(
+            jsonify(
+                {
+                    'result': 'error',
+                    'message': 'No data provided'
+                }
+            ),
+            400
+        )
 
     # Get the logger object from the current app config
     logger = current_app.config['LOGGER']

@@ -23,12 +23,14 @@ Custom Dependancies:
     - systemlog: For sending logs to the logging service.
 """
 
+# Standard library imports
 import yaml
 import urllib.parse
 from typing import Any, Iterator
 import logging
 import ipaddress
 
+# Custom imports
 from systemlog import system_log
 
 
