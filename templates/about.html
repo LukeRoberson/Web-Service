@@ -174,5 +174,23 @@
         {% endfor %}
     </table>
 </div>
+<br>
+
+
+<!--
+    ==========================================================================
+    Raw Config
+    --------------------------------------------------------------------------
+    - Display the raw configuration of the application
+    - Useful for debugging and understanding the current configuration
+    ==========================================================================
+-->
+<div class="w3-container w3-responsive w3-card w3-padding-16">
+    <h3>JSON Config</h3>
+    <div class="w3-container w3-padding-16">
+        <pre>{{ full_config | tojson(indent=2) | safe }}</pre>
+    </div>
+</div>
+
 
 {% endblock %}

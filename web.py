@@ -282,8 +282,8 @@ def about() -> Response:
     # Make an API call to the container service to get container info
     try:
         container_response = requests.get(CONTAINER_URL, timeout=3)
-        print("Container response:", container_response.json())
         container_status = container_response.json()['services']
+
     except Exception as e:
         logging.error("Error fetching container info: %s", e)
         container_status = None
@@ -325,6 +325,7 @@ def about() -> Response:
             logged_in=logged_in,
             service_login_url=service_login_url,
             container_status=container_status,
+            full_config=current_app.config['GLOBAL_CONFIG'],
         )
     )
 

@@ -145,7 +145,7 @@ class LiveAlerts:
         self,
         count: bool = False,
         offset: int = 0,
-        limit: int = None,
+        limit: Optional[int] = None,
         search: str = '',
         source: str = '',
         group: str = '',
