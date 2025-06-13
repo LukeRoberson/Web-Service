@@ -65,6 +65,7 @@ TOKEN_URL = "http://security:5100/api/token"
 CHAT_LIST_URL = "http://teams:5100/api/chat_list"
 CRYPTO_URL = "http://security:5100/api/crypto"
 CONTAINER_URL = "http://core:5100/api/containers"
+PLUGINS_URL = "http://core:5100/api/plugins"
 
 
 # Create a Flask blueprint for the web routes
@@ -421,23 +422,38 @@ def alerts() -> Response:
 def plugins() -> Response:
     '''
     Route to display the plugins page.
-    Gets the plugin list object from the app config and refreshes its contents.
+    Gets the plugin list object from the core service.
     Passes the plugin configuration to the template.
 
     Returns:
         Rendered template for the plugins page with plugin configuration.
     '''
 
-    # Get the plugin list object, and refresh its contents
-    plugin_list = current_app.config['PLUGIN_LIST']
-    plugin_list.load_config()
-    logging.info("Plugin list loaded: %s", plugin_list.config)
+    # Fetch the plugin list from the core API
+    try:
+        response = requests.get(PLUGINS_URL, timeout=3)
+        if response.status_code == 200:
+            plugin_list = response.json()['plugins']
+            logging.info("Fetched plugins from API: %s", plugin_list)
+
+        else:
+            plugin_list = {}
+            logging.warning(
+                "Failed to fetch plugins from API:\n %s",
+                response.text
+            )
+
+    except Exception as e:
+        plugin_list = {}
+        logging.error("Error accessing the plugins API: %s", e)
+
+    logging.debug("Plugin list loaded: %s", plugin_list)
 
     return make_response(
         render_template(
             'plugins.html',
             title="Plugins",
-            plugins=plugin_list.config,
+            plugins=plugin_list,
         )
     )
 

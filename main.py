@@ -44,7 +44,6 @@ Dependencies:
     - logging: For logging messages to the terminal.
 
 Custom Dependencies:
-    - GlobalConfig: For loading global configuration.
     - PluginConfig: For loading plugin configurations.
     - LiveAlerts: For logging alerts to the web interface.
 """
@@ -62,7 +61,7 @@ import logging
 from typing import Callable, Optional, Any
 
 # Custom imports
-from config import PluginConfig, GlobalConfig
+from config import PluginConfig
 from livealerts import LiveAlerts
 from api import web_api
 from web import web_routes
@@ -98,9 +97,13 @@ def fetch_global_config(
             "Failed to fetch global config from core service."
             f" Error: {e}"
         )
+        return {}
 
     if global_config is None:
-        raise RuntimeError("Could not load global config from core service")
+        logging.critical(
+            "Global configuration could not be loaded from core service."
+        )
+        return {}
 
     return global_config['config']
 
@@ -235,7 +238,7 @@ def plugin_config() -> PluginConfig:
 
 def create_app(
     plugins: PluginConfig,
-    config: GlobalConfig,
+    config: dict,
     alerts: LiveAlerts,
 ) -> Flask:
     """
@@ -244,7 +247,7 @@ def create_app(
 
     Args:
         plugins (PluginConfig): The plugin configuration object.
-        config (GlobalConfig): The global configuration object.
+        config (dict): The global configuration object.
         alerts (LiveAlerts): The live alerts object for logging alerts.
 
     Returns:
