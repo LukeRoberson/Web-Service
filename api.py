@@ -142,9 +142,11 @@ def api_plugins() -> Response:
 
         plugin = get_plugin_by_name(plugin_list, plugin_name)
         if plugin:
-            return jsonify({
-                'result': 'success',
-                'plugin': plugin}
+            return jsonify(
+                {
+                    'result': 'success',
+                    'plugin': plugin
+                }
             )
 
         system_log.log(
