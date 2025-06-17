@@ -3,9 +3,8 @@ Module: api.py
 
 Adds API endpoints for the web service.
 
-Functions:
-    - get_plugin_by_name:
-        Find a plugin's configuration by its name.
+Classes:
+    - PluginAPI: A context manager for managing plugins through the Core API.
 
 Blueprints:
     - web_api: A Flask blueprint that handles API endpoints for
@@ -23,9 +22,6 @@ Dependencies:
     - Flask: For creating the web API.
     - os: For file operations.
     - logging: For logging errors and warnings.
-
-Custom Dependencies:
-    - systemlog: For logging system messages.
 """
 
 # Standard library imports
@@ -42,13 +38,10 @@ import logging
 from typing import Optional
 import requests
 
-# Custom imports
-from systemlog import system_log
-from config import PluginConfig
-
 
 RELOAD_FILE = '/app/reload.txt'
 CONFIG_URL = "http://core:5100/api/config"
+PLUGINS_URL = "http://core:5100/api/plugins"
 
 
 # Create a Flask blueprint for the API
@@ -58,23 +51,272 @@ web_api = Blueprint(
 )
 
 
-def get_plugin_by_name(
-    plugin_list: 'PluginConfig',
-    plugin_name: str
-) -> Optional[dict]:
+def error_response(
+    message,
+    status=400
+) -> Response:
     """
-    Find a plugin's configuration by its name.
+    A helper function to create an error response.
 
     Args:
-        plugin_list (PluginConfig): The plugin configuration object.
-        plugin_name (str): The name of the plugin to find.
+        message (str): The error message to return.
+        status (int): The HTTP status code for the error response.
+
+    Returns:
+        Response: A Flask Response object with the error message
+            and status code.
     """
 
-    for plugin in plugin_list.config:
-        if plugin['name'] == plugin_name:
-            return plugin
+    return make_response(
+        jsonify(
+            {
+                'result': 'error',
+                'message': message
+            }
+        ),
+        status
+    )
 
-    return None
+
+def success_response(
+    message=None,
+    data=None,
+    status=200
+) -> Response:
+    """
+    A helper function to create a success response.
+
+    Args:
+        message (str, optional): A success message to include in the response.
+        data (dict, optional): Additional data to include in the response.
+        status (int): The HTTP status code for the success response.
+
+    Returns:
+        Response: A Flask Response object with the success message
+            and status code.
+    """
+
+    # Standard response structure
+    resp = {
+        'result': 'success'
+    }
+
+    # Update with custom message or data if provided
+    if message:
+        resp['message'] = message
+    if data:
+        resp.update(data)
+
+    return make_response(
+        jsonify(
+            resp
+        ),
+        status
+    )
+
+
+class PluginAPI:
+    """
+    Manage plugins through the Core API.
+
+    Args:
+        plugins_url (str): The URL to the plugins API.
+    """
+
+    def __init__(
+        self,
+        plugins_url: str = PLUGINS_URL
+    ):
+        """
+        Initialize the PluginAPI with the URL to the plugins API.
+        """
+        self.url = plugins_url
+
+    def __enter__(
+        self
+    ) -> 'PluginAPI':
+        """
+        Enter the runtime context related to this object.
+
+        Returns:
+            PluginAPI: The instance of the PluginAPI.
+        """
+
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[type],
+        exc_value: Optional[Exception],
+        traceback: Optional[object]
+    ) -> None:
+        """
+        Exit the runtime context related to this object.
+
+        Args:
+            exc_type (Optional[type]): The exception type.
+            exc_value (Optional[Exception]): The exception value.
+            traceback (Optional[object]): The traceback object.
+        """
+
+        # No cleanup needed for this context manager
+        pass
+
+    def _plugin_request(
+        self,
+        method: str,
+        config: dict
+    ) -> bool:
+        """
+        Make a request to the Core API to manage plugins.
+
+        Args:
+            method (str): The HTTP method to use
+                (e.g., 'POST', 'PATCH', 'DELETE').
+            config (dict): The configuration for the plugin to manage.
+
+        Returns:
+            bool: True if the request was successful, False otherwise.
+        """
+
+        if not config:
+            logging.error("No configuration provided for the plugin.")
+            return False
+
+        try:
+            response = requests.request(
+                method,
+                self.url,
+                json=config,
+                timeout=3
+            )
+
+            if response.status_code != 200:
+                logging.error(
+                    "Core service failed to %s plugin:\n %s",
+                    method,
+                    response.text
+                )
+                return False
+
+        except Exception as e:
+            logging.error("Error accessing the plugins API: %s", e)
+            return False
+
+        return True
+
+    def get_plugins(
+        self,
+    ) -> list[dict]:
+        """
+        Fetch the list of plugins from the core API.
+
+        Args:
+            plugins_url (str): The URL to fetch the plugins from.
+
+        Returns:
+            dict: A dictionary containing the list of plugins.
+        """
+
+        # API call
+        try:
+            response = requests.get(
+                self.url,
+                headers={"X-Plugin-Name": "all"},
+                timeout=3
+            )
+            if response.status_code == 200:
+                plugin_list = response.json()['plugins']
+                logging.debug("Fetched plugins from API: %s", plugin_list)
+
+            else:
+                plugin_list = []
+                logging.warning(
+                    "Failed to fetch plugins from API:\n %s",
+                    response.text
+                )
+
+        except Exception as e:
+            plugin_list = []
+            logging.error("Error accessing the plugins API: %s", e)
+
+        return plugin_list
+
+    def get_plugin_by_name(
+        self,
+        plugin_name: str
+    ) -> Optional[dict]:
+        """
+        Find a plugin's configuration by its name.
+
+        Args:
+            plugin_name (str): The name of the plugin to find.
+        """
+
+        plugin_list = self.get_plugins()
+        for plugin in plugin_list:
+            if plugin['name'] == plugin_name:
+                return plugin
+
+        return None
+
+    def add_plugin(
+        self,
+        config: dict
+    ) -> bool:
+        """
+        Add a new plugin using the Core API.
+
+        Args:
+            config (dict): The configuration for the plugin to add.
+
+        Returns:
+            bool: True if the plugin was added successfully, False otherwise.
+        """
+
+        return self._plugin_request(
+            'POST',
+            config,
+        )
+
+    def update_plugin(
+        self,
+        config: dict
+    ) -> bool:
+        """
+        Update an existing plugin using the Core API.
+
+        Args:
+            config (dict): The updated configuration for the plugin.
+
+        Returns:
+            bool: True if the plugin was updated successfully, False otherwise.
+        """
+
+        return self._plugin_request(
+            'PATCH',
+            config
+        )
+
+    def delete_plugin(
+        self,
+        config
+    ) -> bool:
+        """
+        Delete a plugin using the Core API.
+
+        Args:
+            config (dict):
+                The configuration containing the name of the plugin to delete.
+
+        Returns:
+            bool: True if the plugin was deleted successfully, False otherwise.
+        """
+
+        return self._plugin_request(
+            'DELETE',
+            config
+        )
 
 
 @web_api.route(
@@ -122,25 +364,20 @@ def api_plugins() -> Response:
         JSON response indicating success.
     """
 
-    # Get the plugin list, refresh the configuration
-    plugin_list = current_app.config['PLUGIN_LIST']
-    plugin_list.load_config()
-
     # GET is used to get the current configuration for a specific plugin
     if request.method == 'GET':
+        # Expects the X-Plugin-Name header to specify which plugin
         plugin_name = request.headers.get('X-Plugin-Name')
         if not plugin_name:
-            return make_response(
-                jsonify(
-                    {
-                        'result': 'error',
-                        'message': 'Missing X-Plugin-Name header'
-                    }
-                ),
-                400
+            return error_response('Missing X-Plugin-Name header')
+
+        # Get the plugin config from the list
+        with PluginAPI(plugins_url=PLUGINS_URL) as plugin_api:
+            # Find the plugin by name
+            plugin = plugin_api.get_plugin_by_name(
+                plugin_name=plugin_name
             )
 
-        plugin = get_plugin_by_name(plugin_list, plugin_name)
         if plugin:
             return jsonify(
                 {
@@ -149,74 +386,71 @@ def api_plugins() -> Response:
                 }
             )
 
-        system_log.log(
-            f"Plugin {plugin_name} not found in configuration",
-            severity='error'
-        )
-
-        return make_response(
-            jsonify(
-                {
-                    'result': 'error',
-                    'message': f'Plugin {plugin_name} not found'
-                }
-            ),
-            404
+        return error_response(
+            f'Plugin {plugin_name} not found',
+            status=404
         )
 
     # POST is used to add a new plugin
     elif request.method == 'POST':
-        result = plugin_list.register(request.json)
+        if not request.json:
+            return error_response('No configuration provided')
+
+        with PluginAPI(plugins_url=PLUGINS_URL) as plugin_api:
+            result = plugin_api.add_plugin(
+                config=request.json
+            )
 
         # If this failed...
         if not result:
-            return jsonify(
-                {
-                    'result': 'error',
-                    'message': 'Failed to update configuration'
-                }
-            )
+            logging.error("Failed to add plugin: %s", request.json)
+            return error_response('Failed to add plugin')
+
+        # Successfully added the plugin
+        return success_response(
+            message='Plugin added successfully',
+            status=201
+        )
 
     # PATCH is used to update an existing plugin
     elif request.method == 'PATCH':
-        result = plugin_list.update_config(request.json)
+        if not request.json:
+            return error_response('No configuration provided')
+
+        with PluginAPI(plugins_url=PLUGINS_URL) as plugin_api:
+            # Update the plugin configuration
+            result = plugin_api.update_plugin(
+                config=request.json
+            )
 
         # If this failed...
         if not result:
-            return jsonify(
-                {
-                    'result': 'error',
-                    'message': 'Failed to update configuration'
-                }
-            )
+            logging.error("Failed to update plugin: %s", request.json)
+            return error_response('Failed to update plugin')
+
+        # Successfully updated the plugin
+        return success_response('Plugin updated successfully')
 
     # DELETE is used to remove a plugin
     elif request.method == 'DELETE':
         data = request.json
         if not data or 'name' not in data:
-            return make_response(
-                jsonify(
-                    {
-                        'result': 'error',
-                        'message': 'Missing plugin name in request body'
-                    }
-                ),
-                400
+            return error_response('No plugin name provided')
+
+        with PluginAPI(plugins_url=PLUGINS_URL) as plugin_api:
+            result = plugin_api.delete_plugin(
+                config=data
             )
-        result = plugin_list.delete(data['name'])
 
-    # If successful, recycle the workers to apply the changes
-    try:
-        with open(RELOAD_FILE, 'a'):
-            os.utime(RELOAD_FILE, None)
-    except Exception as e:
-        logging.error("Failed to update reload.txt: %s", e)
+        # If this failed...
+        if not result:
+            logging.error("Failed to delete plugin: %s", data)
+            return error_response('Failed to delete plugin')
 
-    return jsonify(
-        {
-            'result': 'success'
-        }
-    )
+        # Successfully deleted the plugin
+        return success_response('Plugin deleted successfully')
+
+    return success_response()
 
 
 @web_api.route(
@@ -242,13 +476,9 @@ def api_config() -> Response:
 
     # GET is used to get the current configuration
     if request.method == 'GET':
-        return make_response(
-            jsonify(
-                {
-                    'result': 'success',
-                    'config': app_config
-                }
-            )
+        return success_response(
+            message='Current configuration retrieved successfully',
+            data={'config': app_config}
         )
 
     # PATCH is used to update config
@@ -260,27 +490,13 @@ def api_config() -> Response:
         try:
             resp = requests.patch(CONFIG_URL, json=data, timeout=5)
             if resp.status_code != 200:
-                return make_response(
-                    jsonify(
-                        {
-                            'result': 'error',
-                            'message': f"Failed to update configuration: "
-                            f"{resp.text}"
-                        }
-                    ), resp.status_code
+                return error_response(
+                    f"Failed to update configuration: {resp.text}"
                 )
 
         except Exception as e:
             logging.error("Failed to patch core service: %s", e)
-            return make_response(
-                jsonify(
-                    {
-                        'result': 'error',
-                        'message': f'Failed to update configuration: {e}'
-                    }
-                ),
-                500
-            )
+            return error_response(f"Failed to update configuration: {e}")
 
         # If successful, recycle the workers to apply the changes
         try:
@@ -289,24 +505,12 @@ def api_config() -> Response:
         except Exception as e:
             logging.error("Failed to update reload.txt: %s", e)
 
-        return make_response(
-            jsonify(
-                {
-                    'result': 'success'
-                }
-            ),
-            200
-        )
+        return success_response()
 
     # If the method is not GET or PATCH, return a 405 Method Not Allowed
-    return make_response(
-        jsonify(
-            {
-                'result': 'error',
-                'message': 'Method not allowed'
-            }
-        ),
-        405
+    return error_response(
+        'Method not allowed',
+        status=405
     )
 
 
@@ -338,15 +542,7 @@ def api_webhook() -> Response:
     logging.debug("Received webhook data: %s", data)
 
     if data is None:
-        return make_response(
-            jsonify(
-                {
-                    'result': 'error',
-                    'message': 'No data provided'
-                }
-            ),
-            400
-        )
+        return error_response('No data provided')
 
     # Get the logger object from the current app config
     logger = current_app.config['LOGGER']
@@ -366,11 +562,7 @@ def api_webhook() -> Response:
     logger.purge_old_alerts()
 
     # Return a success response
-    return jsonify(
-        {
-            'result': 'success'
-        }
-    )
+    return success_response()
 
 
 if __name__ == "__main__":

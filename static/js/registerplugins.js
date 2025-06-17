@@ -25,6 +25,7 @@ function updatePlugin(index) {
         webhook: {
             url: form.url.value,
             secret: form.secret.value,
+            'auth-type': form.authType.value,
             'allowed-ip': form.ip.value.split(',').map(ip => ip.trim())
         }
     };
@@ -73,6 +74,7 @@ function registerPlugin() {
         webhook: {
             url: form.url.value,
             secret: form.secret.value,
+            'auth-type': form.authType.value,
             'allowed-ip': form.ip.value.split(',').map(ip => ip.trim())
         }
     };
@@ -141,7 +143,6 @@ function deletePlugin(name) {
         );
 
         setTimeout(() => {
-            modal.style.display = 'none';
             location.reload();
         }, 2600);
     });

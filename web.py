@@ -432,10 +432,14 @@ def plugins() -> Response:
 
     # Fetch the plugin list from the core API
     try:
-        response = requests.get(PLUGINS_URL, timeout=3)
+        response = requests.get(
+            PLUGINS_URL,
+            headers={"X-Plugin-Name": "all"},
+            timeout=3
+        )
         if response.status_code == 200:
             plugin_list = response.json()['plugins']
-            logging.info("Fetched plugins from API: %s", plugin_list)
+            logging.debug("Fetched plugins from API: %s", plugin_list)
 
         else:
             plugin_list = {}
