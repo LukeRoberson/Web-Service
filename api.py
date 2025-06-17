@@ -381,8 +381,8 @@ def api_plugins() -> Response:
         if plugin:
             return jsonify(
                 {
-                    'result': 'success',
-                    'plugin': plugin
+                    "result": "success",
+                    "plugin": plugin
                 }
             )
 
@@ -477,8 +477,7 @@ def api_config() -> Response:
     # GET is used to get the current configuration
     if request.method == 'GET':
         return success_response(
-            message='Current configuration retrieved successfully',
-            data={'config': app_config}
+            data={"config": app_config}
         )
 
     # PATCH is used to update config

@@ -1,10 +1,53 @@
-# Overview
+# WebUI Service
 
-The web interface for the application
+The web interface for the application.
 
-Uses Flask as the web framework, and HTML/CSS/TypeScript for the UI.
+Uses Flask as the web framework, and HTML/CSS/JS for the UI.
 
 uWSGI is used as the web server.
+</br></br>
+
+> [!NOTE]  
+> Additional documentation can be found in the **docs** folder
+</br></br>
+
+
+
+----
+# Project Organization
+## Python Files
+
+| File          | Provided Function                                             |
+| ------------- | ------------------------------------------------------------- |
+| main.py       | Entry point to the service, load configuration, set up routes |
+| web.py        | Web routes for the main web page                              |
+| api.py        | API endpoints for this service                                |
+| systemlog.py  | Send logging information to the logging service               |
+| livealerts.py | Manage live alerts which are shown on the 'alerts' page       |
+</br></br>
+
+
+## Folder Structure
+
+| Folder      | Usage                          |
+| ----------- | ------------------------------ |
+| /           | Main location for python files |
+| /templates  | HTML template files            |
+| /static/css | CSS files                      |
+| /static/js  | JavaScript files               |
+</br></br>
+
+
+
+----
+# Web Server
+## NGINX
+
+The frontend of the application as a whole is an NGINX container. This adds security to the web interface, including:
+* Certificates
+* Secure Ciphers
+* HSTS and other best practices
+</br></br>
 
 
 ## uWSGI
@@ -14,86 +57,32 @@ In the containerised environment, uWSGI is the web server. This means the uWSGI 
 Requests from outside the stack reach NGINX, which then proxies the requests to the web-interface service using the WSGI protocol.
 
 Requests between containers, which is required for API calls, do not get proxied through NGINX. These are sent directly between containers using the HTTP protocol.
-
-
-## Modules
-
-| Module | Usage                    |
-| ------ | ------------------------ |
-| Flask  | Web framework            |
-| PyYAML | Read and save YAML files |
-
-
-## Container
-
-To build the container (replace 'username' with a real name):
-
-```
-docker build -t <username>/web-interface:latest .
-```
-
-
 </br></br>
-To push the image to docker hub:
-
-```
-docker push <username>/web-interface:latest
-```
 
 
+## Webhook Proxy
 
+Webhooks are sent from outside services, which flow through the NGINX front end to the Web UI service. As plugins are loaded, their destination URLs for webhooks are recorded.
+
+The WebUI dynamically creates routes for these webhook URLs. When webhooks are received, they are proxied to the plugin.
+
+> [!NOTE]  
+> This should ideally be done directly on the NGINX front-end. However, this requires a premium license (to use the API to dynamically create routes).
 </br></br>
----
-
-# Folder Structure
-
-| Folder     | Usage                          |
-| ---------- | ------------------------------ |
-| /          | Main location for python files |
-| /templates | HTML template files            |
-| /static    | CSS files                      |
-| /config    | YAML config files              |
 
 
+
+----
+# Security
+
+Access to the web interface requires authentication. This is managed using an IDP (Azure).
+
+When opening a page for the first time, the user must authenticate with Azure. Their session is stored so they're not challenges on every page.
+
+Azure manages advanced features, such as SSO and MFA. Interaction with Azure is managed by the **Security Service**.
+
+> [!NOTE]  
+> Usernames and passwords for web-interface users are not stored in this application.
 </br></br>
----
-
-# Python Files
-
-| File      | Usage                               |
-| --------- | ----------------------------------- |
-| main.py   | Main file for the app. Starts Flask |
-| config.py | Manages app configuration           |
 
 
-</br></br>
----
-
-# Configuration Files
-
-| File         | Usage                                     |
-| ------------ | ----------------------------------------- |
-| global.yaml  | Global configuration items                |
-| plugins.yaml | A list of plugins and their configuration |
-
-
-</br></br>
----
-
-# Web UI Files
-## HTML Templates
-
-| File         | Usage                                 |
-| ------------ | ------------------------------------- |
-| base.html    | Base template. Implements the nav bar |
-| about.html   | Information about the app as a whole  |
-| alerts.html  | Live alerts from the app and plugins  |
-| config.html  | Configuration for the app             |
-| plugins.html | Manage plugins (add, remove, config)  |
-
-
-## Style Sheets
-
-| File      | Usage                          |
-| --------- | ------------------------------ |
-| style.css | Base style sheet for all pages |
