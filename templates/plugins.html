@@ -92,7 +92,7 @@
 
         <!-- Webhook - Secret -->
         <label><b>Webhook Secret:</b>
-            <p class="w3-small w3-text-grey">Secret to validate webhook messages (optional)</p>
+            <p class="w3-small w3-text-grey">Secret to validate webhook messages (optional). For basic auth, include username and password in the format username:password</p>
             <div style="display: flex; align-items: center;">
                 <input class="w3-input w3-border w3-margin" type="password" name="secret" id="register-secret" style="flex:1;" autocomplete="off">
                 <button type="button" class="w3-button w3-light-grey w3-margin-left" onclick="toggleSecretVisibility('register-secret', this)">
@@ -212,7 +212,7 @@
 
         <!-- Webhook - Secret -->
         <label><b>Webhook Secret:</b>
-            <p class="w3-small w3-text-grey">Secret to validate webhook messages (optional)</p>
+            <p class="w3-small w3-text-grey">Secret to validate webhook messages (optional). For basic auth, include username and password in the format username:password</p>
             <div style="display: flex; align-items: center;">
                 <input class="w3-input w3-border w3-margin" type="password" name="secret" value="{{ plugin.webhook.secret or '' }}" id="configure-secret-{{ loop.index }}" style="flex:1;" autocomplete="off">
                 <button type="button" class="w3-button w3-light-grey w3-margin-left" onclick="toggleSecretVisibility('configure-secret-{{ loop.index }}', this)">
