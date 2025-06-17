@@ -186,11 +186,29 @@
     ==========================================================================
 -->
 <div class="w3-container w3-responsive w3-card w3-padding-16">
-    <h3>JSON Config</h3>
+    <h3>App Config (JSON)</h3>
     <div class="w3-container w3-padding-16">
         <pre>{{ full_config | tojson(indent=2) | safe }}</pre>
     </div>
 </div>
+</br>
+
+
+<!--
+    ==========================================================================
+    Raw Plugins
+    --------------------------------------------------------------------------
+    - Display the raw list of plugins
+    - Useful for debugging and understanding the current configuration
+    ==========================================================================
+-->
+<div class="w3-container w3-responsive w3-card w3-padding-16">
+    <h3>Plugin Config (JSON)</h3>
+    <div class="w3-container w3-padding-16">
+        <pre>{{ full_plugins | tojson(indent=2) | safe }}</pre>
+    </div>
+</div>
+
 
 
 {% endblock %}

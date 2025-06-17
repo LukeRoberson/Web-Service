@@ -10,10 +10,10 @@ This service is responsible for:
     - Displaying live alerts
 
 Module Tasks:
-    1. Load global configuration from the GlobalConfig class.
+    1. Fetch global configuration from the Core service
     2. Set up logging for the service
     3. Setup live logging (the /alerts page)
-    4. Load plugin configurations from the PluginConfig class.
+    4. Fetch plugin configurations from the Core service
     5. Create a Flask application instance and loading blueprints.
 
 Usage:
@@ -24,12 +24,12 @@ Usage:
 Functions:
     - fetch_global_config:
         Fetches the global configuration from the core service.
+    - fetch_plugin_config:
+        Fetches the plugin configuration from the core service.
     - create_webhook_handler:
         Factory function to create a webhook handler for each plugin.
     - logging_setup:
         Sets up the root logger for the web service.
-    - plugin_config:
-        Loads the plugin configuration for the entire app.
     - create_app:
         Creates the Flask application instance and sets up the configuration.
 
@@ -44,7 +44,6 @@ Dependencies:
     - logging: For logging messages to the terminal.
 
 Custom Dependencies:
-    - PluginConfig: For loading plugin configurations.
     - LiveAlerts: For logging alerts to the web interface.
 """
 
@@ -61,13 +60,13 @@ import logging
 from typing import Callable, Optional, Any
 
 # Custom imports
-from config import PluginConfig
 from livealerts import LiveAlerts
 from api import web_api
 from web import web_routes
 
 
 CONFIG_URL = "http://core:5100/api/config"
+PLUGIN_URL = "http://core:5100/api/plugins"
 
 
 def fetch_global_config(
@@ -106,6 +105,48 @@ def fetch_global_config(
         return {}
 
     return global_config['config']
+
+
+def fetch_plugin_config(
+    url: str = PLUGIN_URL,
+) -> list:
+    """
+    Fetch the plugin configuration from the core service.
+
+    Args:
+        url (str): The URL to fetch the plugin configuration from.
+
+    Returns:
+        list: A list of plugins and configuration loaded from the core service.
+
+    Raises:
+        RuntimeError: If the plugin configuration cannot be loaded.
+    """
+
+    plugin_config = None
+    try:
+        response = requests.get(
+            url,
+            headers={'X-Plugin-Name': 'all'},
+            timeout=3,
+        )
+        response.raise_for_status()
+        plugin_config = response.json()
+
+    except Exception as e:
+        logging.critical(
+            "Failed to fetch plugin config from core service."
+            f" Error: {e}"
+        )
+        return []
+
+    if global_config is None:
+        logging.critical(
+            "Plugin configuration could not be loaded from core service."
+        )
+        return []
+
+    return plugin_config['plugins']
 
 
 def create_webhook_handler(
@@ -213,31 +254,8 @@ def logging_setup(
     logging.info("Logging setup complete with level: %s", log_level)
 
 
-def plugin_config() -> PluginConfig:
-    """
-    Load the plugin configuration for the entire app.
-
-    Returns:
-        PluginConfig: An instance of the PluginConfig class with loaded
-            plugin configurations.
-    """
-
-    config = PluginConfig()
-    config.load_config()
-
-    logging.info("%s plugins loaded", len(config))
-    for plugin in config:
-        logging.debug(
-            "Plugin '%s' loaded with webhook URL: %s",
-            plugin['name'],
-            plugin['webhook']['safe_url']
-        )
-
-    return config
-
-
 def create_app(
-    plugins: PluginConfig,
+    plugins: list,
     config: dict,
     alerts: LiveAlerts,
 ) -> Flask:
@@ -246,8 +264,8 @@ def create_app(
     Registers the necessary blueprints for the web service.
 
     Args:
-        plugins (PluginConfig): The plugin configuration object.
-        config (dict): The global configuration object.
+        plugins (list): A list of plugins and their configurations.
+        config (dict): The global configuration.
         alerts (LiveAlerts): The live alerts object for logging alerts.
 
     Returns:
@@ -270,7 +288,11 @@ def create_app(
     app.register_blueprint(web_routes)
 
     # Dynamically register routes for each plugin
+    print("Registering webhooks for plugins...")
+    print(f"Plugins: {plugins}")
+
     for plugin in plugins:
+        print(f"Registering webhook for plugin: {plugin['name']}")
         endpoint = f"webhook_{plugin['name']}"
         allowed_ips = plugin['webhook']['allowed-ip']
 
@@ -289,9 +311,9 @@ def create_app(
 global_config = fetch_global_config(CONFIG_URL)
 logging_setup(global_config)
 live_alerts = LiveAlerts()
-plugin_list = plugin_config()
+plugins = fetch_plugin_config()
 app = create_app(
-    plugins=plugin_list,
+    plugins=plugins,
     config=global_config,
     alerts=live_alerts,
 )

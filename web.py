@@ -7,6 +7,8 @@ Provides the web routes for the web service. This is the WebUI that users
 Functions:
     - verify_auth_token:
         Verify an authentication token from the security service.
+    - mask_secrets:
+        Mask secrets in plugin configurations for display.
     - protected:
         Decorator to protect a route with authentication.
 
@@ -33,12 +35,14 @@ Dependencies:
     - urllib.parse: For parsing URLs.
     - logging: For logging errors and warnings.
     - functools: For creating decorators.
+    - typing: For type hinting and annotations.
+    - copy: For deep copying objects.
 
 Custom Dependencies:
     - systemlog: For logging system messages.
 """
 
-
+# Standard library imports
 from flask import (
     Blueprint,
     Response,
@@ -50,14 +54,15 @@ from flask import (
     redirect,
     make_response,
 )
-
 from functools import wraps
 from itsdangerous import URLSafeTimedSerializer
 import logging
 from typing import Optional, Callable, Any, cast
 import requests
 from urllib.parse import urlparse
+import copy
 
+# Custom imports
 from systemlog import system_log
 
 
@@ -114,6 +119,30 @@ def verify_auth_token(
             severity="warning",
         )
         return None
+
+
+def mask_secrets(
+    plugins
+) -> list:
+    """
+    Mask the secrets in the plugin configuration.
+        This is to prevent sensitive information from being displayed
+        in the web UI.
+
+    Args:
+        plugins (list): A list of plugin configurations.
+
+    Returns:
+        list: A list of plugin configurations with secrets masked.
+    """
+
+    masked = []
+    for plugin in plugins:
+        plugin_copy = copy.deepcopy(plugin)
+        plugin_copy['webhook']['secret'] = '********'
+        masked.append(plugin_copy)
+
+    return masked
 
 
 def protected(
@@ -317,6 +346,9 @@ def about() -> Response:
     # Get the service account from the global config
     service_account = current_app.config['GLOBAL_CONFIG']['teams']['user']
 
+    # Get plugin information (with secrets masked)
+    masked_plugin_list = mask_secrets(current_app.config['PLUGIN_LIST'])
+
     return make_response(
         render_template(
             'about.html',
@@ -326,6 +358,7 @@ def about() -> Response:
             service_login_url=service_login_url,
             container_status=container_status,
             full_config=current_app.config['GLOBAL_CONFIG'],
+            full_plugins=masked_plugin_list,
         )
     )
 
