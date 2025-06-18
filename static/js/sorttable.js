@@ -5,7 +5,7 @@
     - Used in alerts.html
     - Allows sorting by clicking on column headers
     - Handles string and date columns (first column is treated as date)
-    - No external dependencies
+    - Reformats timestamps to local time
 ==========================================================================
 */
 
@@ -73,3 +73,20 @@ function sortTable(n) {
         }
     }
 }
+
+
+/**
+ * Formats timestamps in the table to local time.
+ * This function is called when the document is fully loaded.
+ */
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.alert-timestamp').forEach(function(td) {
+        var epoch = parseInt(td.getAttribute('data-epoch'), 10);
+        if (!isNaN(epoch)) {
+            // Convert to milliseconds for JS Date
+            var date = new Date(epoch * 1000);
+            // Format as local string
+            td.textContent = date.toLocaleString();
+        }
+    });
+});

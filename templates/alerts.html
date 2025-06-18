@@ -238,7 +238,7 @@
         <tbody>
         {% for alert in alerts %}
             <tr>
-                <td style="white-space:nowrap;">{{ alert[0] }}</td>
+                <td style="white-space:nowrap;" class="alert-timestamp" data-epoch="{{ alert[0] }}">{{ alert[0] }}</td>
                 <td style="white-space:nowrap;">{{ alert[1] }}</td>
                 <td style="white-space:nowrap;">{{ alert[2] }}</td>
                 <td style="white-space:nowrap;">{{ alert[3] }}</td>
