@@ -12,5 +12,12 @@
  * @param {number} page - The page number to navigate to.
  */
 function goToPage(page) {
-    window.location.search = `?page=${page}`;
+    // Parse current query parameters
+    const params = new URLSearchParams(window.location.search);
+
+    // Set the new page number
+    params.set('page', page);
+
+    // Update the URL with all filters preserved
+    window.location.search = '?' + params.toString();
 }
