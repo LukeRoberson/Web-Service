@@ -513,57 +513,6 @@ def api_config() -> Response:
     )
 
 
-@web_api.route(
-    '/api/webhook',
-    methods=['POST']
-)
-def api_webhook() -> Response:
-    """
-    API endpoint to receive logs from plugins and services.
-    Logging service will broker the logs to the appropriate destinations.
-    Logging service sends a POST request to this endpoint
-
-    POST/JSON body should contain the following fields:
-        - timestamp: The time the alert was generated.
-        - source: The source of the alert (e.g., plugin name).
-        - group: The group of the alert (e.g., 'service').
-        - category: The category of the alert (e.g., 'web-ui').
-        - alert: The type of alert (e.g., 'system').
-        - severity: The severity of the alert (e.g., 'info', 'warning', etc).
-        - message: The message of the alert.
-
-    Returns:
-        JSON response indicating success.
-    """
-
-    # The body of the request
-    data = request.json
-    logging.debug("Received webhook data: %s", data)
-
-    if data is None:
-        return error_response('No data provided')
-
-    # Get the logger object from the current app config
-    logger = current_app.config['LOGGER']
-
-    # Process the webhook data, store in the DB
-    logger.log_alert(
-        timestamp=data['timestamp'],
-        source=data['source'],
-        group=data['group'],
-        category=data['category'],
-        alert=data['alert'],
-        severity=data['severity'],
-        message=data['message']
-    )
-
-    # Purge old alerts
-    logger.purge_old_alerts()
-
-    # Return a success response
-    return success_response()
-
-
 if __name__ == "__main__":
     # This module is not meant to be run directly.
     raise RuntimeError("This module is not meant to be run directly.")

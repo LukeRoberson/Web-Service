@@ -71,6 +71,7 @@ CHAT_LIST_URL = "http://teams:5100/api/chat_list"
 CRYPTO_URL = "http://security:5100/api/crypto"
 CONTAINER_URL = "http://core:5100/api/containers"
 PLUGINS_URL = "http://core:5100/api/plugins"
+LIVE_ALERTS_URL = "http://logging:5100/api/livealerts"
 
 
 # Create a Flask blueprint for the web routes
@@ -381,10 +382,6 @@ def alerts() -> Response:
         Rendered template for the alerts page with recent alerts and filters.
     '''
 
-    # Get the logger object from the current app config
-    logger = current_app.config['LOGGER']
-
-    # Check search and filter parameters
     search = request.args.get('search', '').strip()
     system_only = request.args.get('system_only') == '1'
     source = request.args.get('source', '')
@@ -392,37 +389,40 @@ def alerts() -> Response:
     category = request.args.get('category', '')
     alert = request.args.get('alert', '')
     severity = request.args.get('severity', '')
-
-    # If system_only is set and group is not, set group to 'service'
-    if not group and system_only:
-        group = 'service'
-
-    # Manage pagination for alerts
-    page_size = 200
-    total_logs = logger.count_alerts(
-        search=search,
-        source=source,
-        group=group,
-        category=category,
-        alert=alert,
-        severity=severity,
-    )
-    total_pages = (total_logs + page_size - 1) // page_size
-
-    # Get the page number to display, or default to 1
     page_number = request.args.get('page', 1, type=int)
+    page_size = 200
 
-    # Collect a list of alerts
-    alerts = logger.get_recent_alerts(
-        offset=(page_number - 1) * page_size,
-        limit=page_size,
-        search=search,
-        source=source,
-        group=group,
-        category=category,
-        alert=alert,
-        severity=severity,
-    )
+    params = {
+        'search': search if search else None,
+        'system_only': system_only if system_only else None,
+        'source': source if source else None,
+        'group': group if group else None,
+        'category': category if category else None,
+        'alert': alert if alert else None,
+        'severity': severity if severity else None,
+        'page': page_number if page_number else None,
+        'page_size': page_size if page_size else None,
+    }
+
+    # API call to get live alerts
+    try:
+        response = requests.get(LIVE_ALERTS_URL, params=params, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            alerts = data.get('alerts', [])
+            total_pages = data.get('total_pages')
+            total_logs = data.get('total_logs')
+        else:
+            alerts = []
+            total_logs = 0
+            total_pages = 1
+            logging.warning("Failed to fetch alerts: %s", response.text)
+
+    except Exception as e:
+        alerts = []
+        total_logs = 0
+        total_pages = 1
+        logging.error("Error accessing the live alerts API: %s", e)
 
     # Extract unique values for each field
     source_list = sorted({event[1] for event in alerts})

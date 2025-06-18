@@ -8,7 +8,6 @@ There is an API in place so other services can access the web interface when req
 | /api/health        | GET                      | Check the health of the container              |
 | /api/plugins       | GET, POST, PATCH, DELETE | Plugin CRUD operations                         |
 | /api/config        | GET, PATCH               | Retrieve and update global configuration       |
-| /api/webhook       | POST                     | Receive logs (live alerts) from other services |
 </br></br>
 
 > [!NOTE]  

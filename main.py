@@ -60,7 +60,7 @@ import logging
 from typing import Callable, Optional, Any
 
 # Custom imports
-from livealerts import LiveAlerts
+# from livealerts import LiveAlerts
 from api import web_api
 from web import web_routes
 
@@ -257,7 +257,7 @@ def logging_setup(
 def create_app(
     plugins: list,
     config: dict,
-    alerts: LiveAlerts,
+    # alerts: LiveAlerts,
 ) -> Flask:
     """
     Create the Flask application instance and set up the configuration.
@@ -280,7 +280,7 @@ def create_app(
     app.config['SESSION_FILE_DIR'] = '/app/flask_session'
     app.config['PLUGIN_LIST'] = plugins
     app.config['GLOBAL_CONFIG'] = config
-    app.config['LOGGER'] = alerts
+    # app.config['LOGGER'] = alerts
     Session(app)
 
     # Register blueprints
@@ -310,10 +310,10 @@ def create_app(
 # Setup the WebUI service
 global_config = fetch_global_config(CONFIG_URL)
 logging_setup(global_config)
-live_alerts = LiveAlerts()
+# live_alerts = LiveAlerts()
 plugins = fetch_plugin_config()
 app = create_app(
     plugins=plugins,
     config=global_config,
-    alerts=live_alerts,
+    # alerts=live_alerts,
 )
