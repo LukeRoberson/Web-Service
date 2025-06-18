@@ -59,7 +59,7 @@ from itsdangerous import URLSafeTimedSerializer
 import logging
 from typing import Optional, Callable, Any, cast
 import requests
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode
 import copy
 
 # Custom imports
@@ -202,6 +202,28 @@ def protected(
             # If the token is valid, store the user in the session
             if user:
                 session['user'] = user
+
+                # Strip token from URL after successful authentication
+                clean_url = request.base_url
+
+                if args:
+                    clean_url += '?' + urlencode(args)
+
+                # Simple redirection to the original URL without the token
+                return make_response(
+                    f"""
+                    <html>
+                      <head>
+                        <script>
+                          window.location.replace("{clean_url}");
+                        </script>
+                      </head>
+                      <body>
+                        Redirecting...
+                      </body>
+                    </html>
+                    """
+                )
 
             # If token validation failed
             else:
