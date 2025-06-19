@@ -171,17 +171,13 @@ def logging_setup(
 
 
 def create_app(
-    plugins: list,
-    config: dict,
 ) -> Flask:
     """
     Create the Flask application instance and set up the configuration.
     Registers the necessary blueprints for the web service.
 
     Args:
-        plugins (list): A list of plugins and their configurations.
-        config (dict): The global configuration.
-        alerts (LiveAlerts): The live alerts object for logging alerts.
+        None
 
     Returns:
         Flask: The Flask application instance with the necessary
@@ -193,8 +189,6 @@ def create_app(
     app.config['SECRET_KEY'] = os.getenv('api_master_pw')
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['SESSION_FILE_DIR'] = '/app/flask_session'
-    app.config['PLUGIN_LIST'] = plugins
-    app.config['GLOBAL_CONFIG'] = config
     Session(app)
 
     # Register blueprints
@@ -221,22 +215,11 @@ def create_app(
     return app
 
 
-# Retrieve global configuration
+# Set up logging for the web service
 global_config = {}
 with Config(CONFIG_URL) as config:
     global_config = config.read()
-
-
-# Set up logging for the web service
 logging_setup(global_config)
 
-# Retrieve a list of plugins and their configurations
-plugins = []
-with PluginManager(PLUGIN_URL) as plugin_manager:
-    plugins = plugin_manager.read()
-
-# Create the Flask application instance with the plugins and global config
-app = create_app(
-    plugins=plugins,
-    config=global_config,
-)
+# Create the Flask application instance
+app = create_app()

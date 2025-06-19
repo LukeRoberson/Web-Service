@@ -64,6 +64,7 @@ import copy
 
 # Custom imports
 from systemlog import system_log
+from sdk import Config, PluginManager
 
 
 TOKEN_URL = "http://security:5100/api/token"
@@ -72,6 +73,7 @@ CRYPTO_URL = "http://security:5100/api/crypto"
 CONTAINER_URL = "http://core:5100/api/containers"
 PLUGINS_URL = "http://core:5100/api/plugins"
 LIVE_ALERTS_URL = "http://logging:5100/api/livealerts"
+CONFIG_URL = "http://core:5100/api/config"
 
 
 # Create a Flask blueprint for the web routes
@@ -304,7 +306,9 @@ def config() -> Response:
     '''
 
     # Get the config object
-    app_config = current_app.config['GLOBAL_CONFIG']
+    app_config = {}
+    with Config(CONFIG_URL) as config:
+        app_config = config.read()
 
     return make_response(
         render_template(
@@ -367,10 +371,18 @@ def about() -> Response:
     service_login_url = f"https://{entered_domain}/login?prompt=login"
 
     # Get the service account from the global config
-    service_account = current_app.config['GLOBAL_CONFIG']['teams']['user']
+    app_config = {}
+    with Config(CONFIG_URL) as config:
+        app_config = config.read()
+
+    service_account = app_config['teams']['user']
 
     # Get plugin information (with secrets masked)
-    masked_plugin_list = mask_secrets(current_app.config['PLUGIN_LIST'])
+    plugin_list = []
+    with PluginManager(PLUGINS_URL) as plugin_manager:
+        plugin_list = plugin_manager.read()
+
+    masked_plugin_list = mask_secrets(plugin_list)
 
     return make_response(
         render_template(
@@ -380,7 +392,7 @@ def about() -> Response:
             logged_in=logged_in,
             service_login_url=service_login_url,
             container_status=container_status,
-            full_config=current_app.config['GLOBAL_CONFIG'],
+            full_config=app_config,
             full_plugins=masked_plugin_list,
         )
     )

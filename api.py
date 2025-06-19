@@ -30,7 +30,6 @@ from flask import (
     Blueprint,
     Response,
     request,
-    current_app,
     make_response
 )
 import logging
@@ -205,7 +204,9 @@ def api_config() -> Response:
     """
 
     # Get the config, refresh the configuration
-    app_config = current_app.config['GLOBAL_CONFIG']
+    app_config = {}
+    with Config(CONFIG_URL) as config:
+        app_config = config.read()
 
     # GET is used to get the current configuration
     if request.method == 'GET':
