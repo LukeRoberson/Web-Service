@@ -195,9 +195,14 @@ def create_app(
     app.register_blueprint(web_api)
     app.register_blueprint(web_routes)
 
+    # Retrieve a list of plugins and their configurations
+    plugins = []
+    with PluginManager(PLUGIN_URL) as plugin_manager:
+        plugins = plugin_manager.read()
+
     # Dynamically register routes for each plugin
-    print("Registering webhooks for plugins...")
-    print(f"Plugins: {plugins}")
+    logging.info("Registering webhooks for plugins...")
+    logging.info(f"Plugins: {plugins}")
 
     for plugin in plugins:
         print(f"Registering webhook for plugin: {plugin['name']}")
@@ -215,10 +220,12 @@ def create_app(
     return app
 
 
-# Set up logging for the web service
+# Retrieve global configuration
 global_config = {}
 with Config(CONFIG_URL) as config:
     global_config = config.read()
+
+# Set up logging for the web service
 logging_setup(global_config)
 
 # Create the Flask application instance
