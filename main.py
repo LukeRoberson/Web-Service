@@ -22,10 +22,6 @@ Usage:
     Build the Docker image and run it with the provided Dockerfile.
 
 Functions:
-    - fetch_global_config:
-        Fetches the global configuration from the core service.
-    - fetch_plugin_config:
-        Fetches the plugin configuration from the core service.
     - create_webhook_handler:
         Factory function to create a webhook handler for each plugin.
     - logging_setup:
@@ -60,93 +56,13 @@ import logging
 from typing import Callable, Optional, Any
 
 # Custom imports
-# from livealerts import LiveAlerts
 from api import web_api
 from web import web_routes
+from sdk import Config, PluginManager
 
 
 CONFIG_URL = "http://core:5100/api/config"
 PLUGIN_URL = "http://core:5100/api/plugins"
-
-
-def fetch_global_config(
-    url: str = CONFIG_URL,
-) -> dict:
-    """
-    Fetch the global configuration from the core service.
-
-    Args:
-        url (str): The URL to fetch the global configuration from.
-
-    Returns:
-        dict: The global configuration loaded from the core service.
-
-    Raises:
-        RuntimeError: If the global configuration cannot be loaded.
-    """
-
-    global_config = None
-    try:
-        response = requests.get(url, timeout=3)
-        response.raise_for_status()
-        global_config = response.json()
-
-    except Exception as e:
-        logging.critical(
-            "Failed to fetch global config from core service."
-            f" Error: {e}"
-        )
-        return {}
-
-    if global_config is None:
-        logging.critical(
-            "Global configuration could not be loaded from core service."
-        )
-        return {}
-
-    return global_config['config']
-
-
-def fetch_plugin_config(
-    url: str = PLUGIN_URL,
-) -> list:
-    """
-    Fetch the plugin configuration from the core service.
-
-    Args:
-        url (str): The URL to fetch the plugin configuration from.
-
-    Returns:
-        list: A list of plugins and configuration loaded from the core service.
-
-    Raises:
-        RuntimeError: If the plugin configuration cannot be loaded.
-    """
-
-    plugin_config = None
-    try:
-        response = requests.get(
-            url,
-            headers={'X-Plugin-Name': 'all'},
-            timeout=3,
-        )
-        response.raise_for_status()
-        plugin_config = response.json()
-
-    except Exception as e:
-        logging.critical(
-            "Failed to fetch plugin config from core service."
-            f" Error: {e}"
-        )
-        return []
-
-    if global_config is None:
-        logging.critical(
-            "Plugin configuration could not be loaded from core service."
-        )
-        return []
-
-    return plugin_config['plugins']
 
 
 def create_webhook_handler(
@@ -257,7 +173,6 @@ def logging_setup(
 def create_app(
     plugins: list,
     config: dict,
-    # alerts: LiveAlerts,
 ) -> Flask:
     """
     Create the Flask application instance and set up the configuration.
@@ -280,7 +195,6 @@ def create_app(
     app.config['SESSION_FILE_DIR'] = '/app/flask_session'
     app.config['PLUGIN_LIST'] = plugins
     app.config['GLOBAL_CONFIG'] = config
-    # app.config['LOGGER'] = alerts
     Session(app)
 
     # Register blueprints
@@ -307,13 +221,22 @@ def create_app(
     return app
 
 
-# Setup the WebUI service
-global_config = fetch_global_config(CONFIG_URL)
+# Retrieve global configuration
+global_config = {}
+with Config(CONFIG_URL) as config:
+    global_config = config.read()
+
+
+# Set up logging for the web service
 logging_setup(global_config)
-# live_alerts = LiveAlerts()
-plugins = fetch_plugin_config()
+
+# Retrieve a list of plugins and their configurations
+plugins = []
+with PluginManager(PLUGIN_URL) as plugin_manager:
+    plugins = plugin_manager.read()
+
+# Create the Flask application instance with the plugins and global config
 app = create_app(
     plugins=plugins,
     config=global_config,
-    # alerts=live_alerts,
 )
