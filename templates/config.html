@@ -76,7 +76,6 @@
     app-id - The ID of the Azure application for authentication
     app-secret - The encrypted secret
     salt - The salt for the encrypted secret
-    redirect-uri - The URL to redirect to after authentication
     admin-group - The Azure group ID for admin users
     ==========================================================================
 -->
@@ -85,6 +84,9 @@
     <header class="w3-container w3-light-grey">
         <h3>Authentication</h3>
     </header>
+    <div class="w3-container w3-padding-16">
+        <p class="w3-small w3-text-grey">OAuth callbacks will be sent to /callback</p>
+    </div>
 
     <form id="auth-form" class="w3-container w3-padding-16">
         <!-- App ID - String -->
@@ -112,15 +114,6 @@
         <!-- Salt - The salt for the encrypted secret -->
         <input type="hidden" name="auth_salt"
             value="{{ config['authentication']['salt'] if config['authentication']['salt'] is defined else '' }}">
-
-        <!-- Redirect URI - The URL to redirect to after authentication -->
-        <label>
-            Redirect URI
-            <p class="w3-small w3-text-grey">The callback URL that Azure calls during authentication</p>
-            <input class="w3-input w3-border" type="text" name="auth_redirect_uri"
-                value="{{ config['authentication']['redirect-uri'] if config['authentication']['redirect-uri'] is defined else '' }}" required>
-        </label>
-        <br>
 
         <!-- Admin Group - The Azure group ID for admin users -->
         <label>
