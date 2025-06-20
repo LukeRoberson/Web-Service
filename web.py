@@ -39,7 +39,9 @@ Dependencies:
     - copy: For deep copying objects.
 
 Custom Dependencies:
-    - systemlog: For logging system messages.
+    - sdk.Config: For reading configuration from the core service.
+    - sdk.PluginManager: For managing plugins from the core service.
+    - sdk.SystemLog: For logging system messages to the logging service.
 """
 
 # Standard library imports
@@ -63,8 +65,8 @@ from urllib.parse import urlparse, urlencode
 import copy
 
 # Custom imports
-from systemlog import system_log
 from sdk import Config, PluginManager
+from sdk import SystemLog
 
 
 TOKEN_URL = "http://security:5100/api/token"
@@ -74,6 +76,19 @@ CONTAINER_URL = "http://core:5100/api/containers"
 PLUGINS_URL = "http://core:5100/api/plugins"
 LIVE_ALERTS_URL = "http://logging:5100/api/livealerts"
 CONFIG_URL = "http://core:5100/api/config"
+LOG_URL = "http://logging:5100/api/log"
+
+
+# Initialize the SystemLog with default values
+system_log = SystemLog(
+    logging_url=LOG_URL,
+    source="web-interface",
+    destination=["web"],
+    group="service",
+    category="web-ui",
+    alert="system",
+    severity="info"
+)
 
 
 # Create a Flask blueprint for the web routes

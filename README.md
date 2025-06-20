@@ -22,7 +22,6 @@ uWSGI is used as the web server.
 | main.py       | Entry point to the service, load configuration, set up routes |
 | web.py        | Web routes for the main web page                              |
 | api.py        | API endpoints for this service                                |
-| systemlog.py  | Send logging information to the logging service               |
 | livealerts.py | Manage live alerts which are shown on the 'alerts' page       |
 </br></br>
 
