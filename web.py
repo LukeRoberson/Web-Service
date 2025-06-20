@@ -42,6 +42,7 @@ Custom Dependencies:
     - sdk.Config: For reading configuration from the core service.
     - sdk.PluginManager: For managing plugins from the core service.
     - sdk.SystemLog: For logging system messages to the logging service.
+    - sdk.CryptoServices: For cryptographic operations.
 """
 
 # Standard library imports
@@ -65,8 +66,12 @@ from urllib.parse import urlparse, urlencode
 import copy
 
 # Custom imports
-from sdk import Config, PluginManager
-from sdk import SystemLog
+from sdk import (
+    Config,
+    PluginManager,
+    SystemLog,
+    CryptoServices,
+)
 
 
 TOKEN_URL = "http://security:5100/api/token"
@@ -593,35 +598,15 @@ def tools() -> Response:
             )
 
         try:
-            response = requests.post(
-                CRYPTO_URL,
-                json={
-                    'type': operation,
-                    'plain-text': plain,
-                    'encrypted': encrypted,
-                    'salt': salt,
-                },
-                timeout=5
-            )
-
-            data = response.json()
-            if data.get('result') == 'success':
+            with CryptoServices(CRYPTO_URL) as crypto_service:
+                # Use the crypto service to perform the operation
                 if operation == 'encrypt':
-                    # If encrypting, get the encrypted string and salt
-                    encrypt_encrypted = data.get('encrypted')
-                    encrypt_salt = data.get('salt')
+                    encrypt_encrypted, encrypt_salt = (
+                        crypto_service.encrypt(plain)
+                    )
 
                 elif operation == 'decrypt':
-                    # If decrypting, get the decrypted string
-                    decrypt_plain = data.get('decrypted')
-
-            else:
-                if operation == 'encrypt':
-                    encrypt_error = data.get('error', 'Unknown error')
-                    logging.error("Encryption failed: %s", data.get('error'))
-                else:
-                    decrypt_error = data.get('error', 'Unknown error')
-                    logging.error("Decryption failed: %s", data.get('error'))
+                    decrypt_plain, _ = crypto_service.decrypt(encrypted, salt)
 
         except Exception as e:
             if operation == 'encrypt':
@@ -636,8 +621,8 @@ def tools() -> Response:
 
         # Check the response
         if response.status_code == 200:
-            logging.debug("/tools: Chat list response: %s", response.text)
-            chat_list = response.json().get('chats', [])
+            data = response.json()
+            chat_list = data[0].get('chats', [])
 
         # Bad response from the API
         else:
