@@ -18,6 +18,12 @@ LABEL net.networkdirection.service.name="web-interface"
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
+# Install procps, which includes sysctl
+# RUN apk add --no-cache procps
+
+# Set the somaxconn value in sysctl.conf (increase maximum listners for uWSGI)
+# RUN echo "net.core.somaxconn=1024" >> /etc/sysctl.conf
+
 # Copy the rest of the application code
 COPY . .
 
