@@ -404,6 +404,14 @@ def about() -> Response:
 
     masked_plugin_list = mask_secrets(plugin_list)
 
+    # Read the uwsgi log file
+    try:
+        with open('/var/log/uwsgi-web.log', 'r') as log_file:
+            log_content = log_file.read()
+    except Exception as e:
+        logging.error("Error reading uwsgi log file: %s", e)
+        log_content = "Unable to read log file."
+
     return make_response(
         render_template(
             'about.html',
@@ -414,6 +422,7 @@ def about() -> Response:
             container_status=container_status,
             full_config=app_config,
             full_plugins=masked_plugin_list,
+            web_log=log_content,
         )
     )
 

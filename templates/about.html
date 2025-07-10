@@ -211,4 +211,22 @@
 
 
 
+<!--
+    ==========================================================================
+    Web log
+    --------------------------------------------------------------------------
+    - Display the uWSGI log for the web UI
+    ==========================================================================
+-->
+<div class="w3-container w3-responsive w3-card w3-padding-16">
+    <h3>Web UI log (uWSGI)</h3>
+    <div class="w3-container w3-padding-16">
+        <pre style="white-space: pre-wrap">
+            {{ web_log }}
+        </pre>
+    </div>
+</div>
+
+
+
 {% endblock %}
