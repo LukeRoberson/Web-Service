@@ -175,3 +175,19 @@ function showConfigMessage(message, type) {
         msgDiv.style.opacity = '1';
     }, 2600);
 }
+
+
+/**
+ * Clears the form fields in a modal.
+ * Used to reset the form when the user cancels or closes the modal.
+ * 
+ * @param {*} modalId - The ID of the modal to clear the form in.
+ */
+function clearForm(modalId) {
+    const modal = document.getElementById(modalId);
+    const form = modal.querySelector('form');
+    if (form) {
+        form.reset(); // Resets all form fields to their default values
+    }
+}
+
