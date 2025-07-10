@@ -29,24 +29,24 @@
     <h3>Azure Service Account Status</h3>
     
     <!-- Table to show status -->
-    <table class="w3-table w3-striped">
-        <tr>
-            <th>Service Account</th>
-            <td>{{ service_account }}</td>
-        </tr>
-        <tr>
-            <th>Status</th>
-            <td>
+    <div class="service-account-details">
+        <div class="service-account-item">
+            <b>Service Account:</b>
+            <p>{{ service_account }}</p>
+        </div>
+        <div class="service-account-item">
+            <b>Status:</b>
+            <p>
                 {% if logged_in %}
                     <span class="w3-badge w3-green">↑</span>
-                    <p style="display: inline; margin-left: 8px;">Logged in</p>
+                    <span style="margin-left: 8px;">Logged in</span>
                 {% else %}
                     <span class="w3-badge w3-red">↓</span>
-                    <p style="display: inline; margin-left: 8px;">Not logged in</p>
+                    <span style="margin-left: 8px;">Not logged in</span>
                 {% endif %}
-            </td>
-        </tr>
-    </table>
+            </p>
+        </div>
+    </div>
 
     <!-- Button to log in if not logged in -->
     {% if not logged_in %}
@@ -187,8 +187,10 @@
 -->
 <div class="w3-container w3-responsive w3-card w3-padding-16">
     <h3>App Config (JSON)</h3>
-    <div class="w3-container w3-padding-16">
-        <pre>{{ full_config | tojson(indent=2) | safe }}</pre>
+    <div class="w3-container w3-padding-16" style="overflow-x: auto;">
+        <pre  style="overflow-x: auto;">
+            {{ full_config | tojson(indent=2) | safe }}
+        </pre>
     </div>
 </div>
 </br>
@@ -204,8 +206,10 @@
 -->
 <div class="w3-container w3-responsive w3-card w3-padding-16">
     <h3>Plugin Config (JSON)</h3>
-    <div class="w3-container w3-padding-16">
-        <pre>{{ full_plugins | tojson(indent=2) | safe }}</pre>
+    <div class="w3-container w3-padding-16" style="overflow-x: auto;">
+        <pre style="overflow-x: auto;">
+            {{ full_plugins | tojson(indent=2) | safe }}
+        </pre>
     </div>
 </div>
 
@@ -220,8 +224,8 @@
 -->
 <div class="w3-container w3-responsive w3-card w3-padding-16">
     <h3>Web UI log (uWSGI)</h3>
-    <div class="w3-container w3-padding-16">
-        <pre style="white-space: pre-wrap">
+    <div class="w3-container w3-padding-16" style="overflow-x: auto;">
+        <pre style="overflow-x: auto;">
             {{ web_log }}
         </pre>
     </div>

@@ -64,7 +64,7 @@
     - A toolbar with more advanced filtering options
     ==========================================================================
 -->
-<div class="w3-container w3-responsive w3-padding-16" style="width:90vw; max-width:1600px; margin:0 auto;">
+<div class="w3-container w3-responsive w3-padding-16 alerts-card" style="max-width:1600px;">
     <!-- Header with title and controls -->
     <div style="display: flex; align-items: center; justify-content: space-between;">
         <!-- Left spacer -->
@@ -86,53 +86,47 @@
         </div>
     </div>
 
-    <!-- Toolbar - Search and Pagination -->
-    <div class="w3-padding" style="display: flex; align-items: center; justify-content: space-between;">
+    <div class="w3-responsive w3-padding toolbar-container">
         <!-- Simple filtering controls -->
-        <div style="display: flex; align-items: center; gap: 16px;">
-            <!-- Seach bar -->
-            <form method="get" style="display: inline;" id="searchForm">
-                <input type="text" name="search" placeholder="Search messages..." value="{{ request.args.get('search', '') }}" style="padding: 4px 8px;"/>
-                <button type="submit" class="w3-button w3-blue w3-round w3-small" style="margin-left: 4px;">
+        <div class="toolbar-section">
+            <form method="get" id="searchForm">
+                <input type="text" name="search" placeholder="Search messages..." value="{{ request.args.get('search', '') }}" class="toolbar-input"/>
+                <button type="submit" class="w3-button w3-blue w3-round w3-small toolbar-button">
                     <i class="fa fa-search" aria-hidden="true"></i> Search
                 </button>
                 {% if request.args.get('system_only') %}
                     <input type="hidden" name="system_only" value="1">
                 {% endif %}
             </form>
-
-            <!-- System log filter -->
-            <form method="get" style="display: inline;" id="systemLogsForm">
-                <label style="margin-left: 12px; font-size: 15px;">
+    
+            <form method="get" id="systemLogsForm">
+                <label class="toolbar-label">
                     <input type="checkbox" name="system_only" value="1" {% if request.args.get('system_only') %}checked{% endif %} onchange="this.form.submit()">
                     System logs only
                 </label>
             </form>
         </div>
-
+    
         <!-- Summary and pagination -->
-        <div style="display: flex; align-items: center; gap: 16px;">
-            <!-- Alert count -->
-            <span style="font-size: 18px; color: #333;">
+        <div class="toolbar-section w3-padding">
+            <span class="toolbar-summary">
                 Showing {{ alerts|length }} of {{ total_logs }} events.
             </span>
-
-            <!-- Pagination controls -->
-            <button onclick="goToPage(1)" {% if page <= 1 %}disabled{% endif %} title="First page">
-                <i class="fa fa-angle-double-left"></i>
-            </button>
-            <button onclick="goToPage('{{ page - 1 }}')" {% if page <= 1 %}disabled{% endif %} title="Previous page">
-                <i class="fa fa-chevron-left"></i>
-            </button>
-            
-            <span style="margin: 0 8px;">Page {{ page }} of {{ total_pages }}</span>
-            
-            <button onclick="goToPage('{{ page + 1 }}')" {% if page >= total_pages %}disabled{% endif %} title="Next page">
-                <i class="fa fa-chevron-right"></i>
-            </button>
-            <button onclick="goToPage('{{ total_pages }}')" {% if page >= total_pages %}disabled{% endif %} title="Last page">
-                <i class="fa fa-angle-double-right"></i>
-            </button>
+            <div class="pagination-controls">
+                <button onclick="goToPage(1)" {% if page <= 1 %}disabled{% endif %} title="First page">
+                    <i class="fa fa-angle-double-left"></i>
+                </button>
+                <button onclick="goToPage('{{ page - 1 }}')" {% if page <= 1 %}disabled{% endif %} title="Previous page">
+                    <i class="fa fa-chevron-left"></i>
+                </button>
+                <span>Page {{ page }} of {{ total_pages }}</span>
+                <button onclick="goToPage('{{ page + 1 }}')" {% if page >= total_pages %}disabled{% endif %} title="Next page">
+                    <i class="fa fa-chevron-right"></i>
+                </button>
+                <button onclick="goToPage('{{ total_pages }}')" {% if page >= total_pages %}disabled{% endif %} title="Last page">
+                    <i class="fa fa-angle-double-right"></i>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -222,7 +216,7 @@
     - Alert message
     ==========================================================================
 -->
-<div class="w3-container w3-responsive w3-padding-16" style="width:90vw; max-width:1600px; margin:0 auto; overflow-x:auto;">
+<div class="w3-container w3-responsive w3-padding-16" style="width:100%; max-width:1600px; margin:0 auto; overflow-x:auto;">
     <table class="w3-table w3-striped" style="table-layout: auto; width: 100%;">
         <thead>
             <tr>

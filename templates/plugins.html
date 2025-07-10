@@ -132,23 +132,23 @@
 </div>
 
 {% for plugin in plugins %}
-<div class="w3-card-4 w3-responsive">
+<div class="w3-container w3-responsive w3-card w3-padding-16">
     <!-- Plugin Name as a header -->
     <header class="w3-container w3-light-grey">
         <h4>{{ plugin.name }}</h4>
     </header>
 
     <div class="w3-container w3-padding-16">
-        <table class="w3-table">
-            <tr>
-                <td><b>Description:</b></td>
-                <td>{{ plugin.description }}</td>
-            </tr>
-            <tr>
-                <td><b>Webhook URL:</b></td>
-                <td>{{ plugin.webhook.safe_url }}</td>
-            </tr>
-        </table>
+        <div class="plugin-details">
+            <div class="plugin-item">
+                <b>Description:</b>
+                <p>{{ plugin.description }}</p>
+            </div>
+            <div class="plugin-item">
+                <b>Webhook URL:</b>
+                <p>{{ plugin.webhook.safe_url }}</p>
+            </div>
+        </div>
 
         <!-- Configure and Remove buttons -->
         <br>

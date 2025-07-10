@@ -60,25 +60,26 @@
         -->
         <header>
             <!-- Nav bar -->
-            <nav style="display: flex; align-items: center;">
-                <!-- Flexible, to get the menu in the centre, and slider in the right -->
-                <div style="flex:1"></div>
+            <nav class="w3-bar w3-light-blue">
+                <!-- Hamburger menu for small screens -->
+                <button class="w3-bar-item w3-button w3-hide-large w3-text-white w3-dark-grey" onclick="toggleMenu()">☰</button>
                 
                 <!-- Menu items, centred in the nav bar -->
-                <ul style="display: flex; gap: 1em; margin: 0 auto; padding: 0; list-style: none;">
-                    <li><a href="{{ url_for('web_routes.config') }}">Config</a></li>
-                    <li><a href="{{ url_for('web_routes.about') }}">About</a></li>
-                    <li><a href="{{ url_for('web_routes.alerts') }}">Alerts</a></li>
-                    <li><a href="{{ url_for('web_routes.plugins') }}">Plugins</a></li>
-                    <li><a href="{{ url_for('web_routes.tools') }}">Tools</a></li>
-                </ul>
+                <div id="navMenu" class="w3-bar-item" style="display: flex; gap: 1em; margin: 0 auto; padding: 0;">
+                    <a href="{{ url_for('web_routes.config') }}" class="w3-bar-item w3-button w3-text-light-grey">Config</a>
+                    <a href="{{ url_for('web_routes.about') }}" class="w3-bar-item w3-button w3-text-light-grey">About</a>
+                    <a href="{{ url_for('web_routes.alerts') }}" class="w3-bar-item w3-button w3-text-light-grey">Alerts</a>
+                    <a href="{{ url_for('web_routes.plugins') }}" class="w3-bar-item w3-button w3-text-light-grey">Plugins</a>
+                    <a href="{{ url_for('web_routes.tools') }}" class="w3-bar-item w3-button w3-text-light-grey">Tools</a>
+                </div>
 
                 <!-- Dark mode slider -->
-                <div style="flex:1"></div>
-                <label class="switch" style="margin-right: 1em;">
-                    <input type="checkbox" id="darkModeToggle">
-                    <span class="slider round"></span>
-                </label>
+                <div class="w3-bar-item w3-right">
+                    <label class="switch">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
             </nav>
         </header>
 
@@ -96,5 +97,14 @@
         </main>
     </body>
 
-
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('navMenu');
+            if (menu.style.display === 'none' || menu.style.display === '') {
+                menu.style.display = 'flex';
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+    </script>
 </html>

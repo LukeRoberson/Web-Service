@@ -23,6 +23,23 @@ main {
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+/* Responsive styles for small screens */
+@media (max-width: 414px) {
+    main {
+        width: 97%;
+        margin: 1em auto;
+    }
+}
+
+/* Responsive styles for medium or landscape screens */
+@media (max-width: 800px) {
+    main {
+        width: 95%;
+        margin: 2em auto;
+    }
+}
+
+
 .w3-badge[title] {
     cursor: pointer;
     user-select: none;
@@ -42,18 +59,12 @@ header {
     padding: 1em 0;
 }
 
-/* Style the navigation list for horizontal layout and centering */
-nav ul {
-    list-style: none;
+nav {
     display: flex;
-    justify-content: center;
-    margin: 0;
-    padding: 0;
-}
-
-/* Add spacing between navigation items */
-nav li {
-    margin: 0 1.5em;
+    justify-content: center; /* Center the items horizontally */
+    align-items: center;    /* Center the items vertically */
+    gap: 1em;               /* Add spacing between items */
+    flex-wrap: wrap;        /* Allow wrapping for small screens */
 }
 
 /* Style navigation links: color, font, and remove underline */
@@ -70,25 +81,131 @@ nav a:hover {
 }
 
 
-/* For small screens */
-nav {
-    flex-wrap: wrap;
+#navMenu {
+    display: flex; /* Default display for larger screens */
+    gap: 1em;
+    margin: 0 auto;
+    padding: 0;
 }
-@media (max-width: 600px) {
-    .w3-card-4, .w3-container {
-        margin: 0 !important;
-        padding: 8px !important;
+
+/* Responsive styles for small screens */
+@media (max-width: 414px) {
+    nav {
+        flex-direction: column;
+        align-items: center;
     }
-    h1, h3, h4 {
-        font-size: 1.2em !important;
-    }
-    table, th, td {
-        font-size: 0.95em !important;
-    }
-    .w3-table {
-        display: block;
-        overflow-x: auto;
-        width: 100%;
+    #navMenu {
+        display: none;
+        flex-direction: column; /* Stack menu items vertically */
+        align-items: center;    /* Center items horizontally */
+        gap: 4px;               /* Add spacing between items */
+        width: 100%;            /* Use full width */
     }
 }
 
+/* Responsive styles for medium screens and landscape */
+@media (max-width: 800px) {
+    nav {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+
+/* Plugin details container */
+.plugin-details {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    gap: 1em;               /* Add spacing between items */
+}
+
+/* Plugin item styling */
+.plugin-item {
+    word-wrap: break-word;  /* Break long words */
+    white-space: normal;    /* Allow text wrapping */
+}
+
+/* Responsive styles for small screens */
+@media (max-width: 414px) {
+    .plugin-details {
+        padding: 0.5em;      /* Adjust padding for small screens */
+    }
+}
+
+/* Service account details container */
+.service-account-details {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    gap: 1em;               /* Add spacing between items */
+}
+
+
+.alerts-card {
+    width: 98%;
+    margin: 0 auto; /* Center the card horizontally */
+}
+
+/* Responsive styles for small screens */
+@media (max-width: 414px) {
+    .alerts-card {
+        width: 98%;
+        margin: 0 auto; /* Center the card horizontally */
+    }
+}
+
+
+/* Toolbar container */
+.toolbar-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+}
+
+/* Toolbar sections */
+.toolbar-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Toolbar input and buttons */
+.toolbar-input {
+    padding: 4px 8px;
+    width: 200px;
+}
+
+.toolbar-button {
+    margin-left: 4px;
+}
+
+.toolbar-label {
+    font-size: 15px;
+    margin-left: 12px;
+}
+
+/* Pagination controls */
+.pagination-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Responsive styles for small screens */
+@media (max-width: 414px) {
+    .toolbar-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .toolbar-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .toolbar-input {
+        width: 100%;
+    }
+}
