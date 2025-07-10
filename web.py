@@ -596,6 +596,24 @@ def tools() -> Response:
     encrypt_encrypted = encrypt_salt = encrypt_error = None
     decrypt_plain = decrypt_error = None
 
+    # Check if the Azure service account is authenticated
+    response = None
+    try:
+        response = requests.get(TOKEN_URL, timeout=3)
+
+    except Exception as e:
+        logging.error(
+            "Failed to check Azure service account authentication: %s", e
+        )
+
+    if response and response.status_code == 200:
+        logging.debug("/tools: Azure service account is authenticated")
+        logged_in = True
+
+    else:
+        logging.warning("/tools: Azure service account is not authenticated")
+        logged_in = False
+
     # Process the form submission
     if request.method == 'POST':
         # Get strings from the form
@@ -641,21 +659,22 @@ def tools() -> Response:
 
     # Fetch the chat list from the Teams API
     chat_list = []
-    try:
-        response = requests.get(CHAT_LIST_URL, timeout=5)
+    if logged_in:
+        try:
+            response = requests.get(CHAT_LIST_URL, timeout=5)
 
-        # Check the response
-        if response.status_code == 200:
-            data = response.json()
-            chat_list = data[0].get('chats', [])
+            # Check the response
+            if response.status_code == 200:
+                data = response.json()
+                chat_list = data[0].get('chats', [])
 
-        # Bad response from the API
-        else:
-            logging.warning("Failed to fetch chat list: %s", response.text)
+            # Bad response from the API
+            else:
+                logging.warning("Failed to fetch chat list: %s", response.text)
 
-    # API error handling
-    except Exception as e:
-        logging.error("Error accessing the chat list API:\n%s", e)
+        # API error handling
+        except Exception as e:
+            logging.error("Error accessing the chat list API:\n%s", e)
 
     # Display the page
     return make_response(
