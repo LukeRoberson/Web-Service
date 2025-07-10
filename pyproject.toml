@@ -1,0 +1,9 @@
+[tool.project-metadata]
+name = "Web Interface Service"
+description = "The Web Interface for the AI assistant app"
+version = "1.0.1"
+
+[tool.versioning]
+major = 1
+minor = 0
+patch = 1
