@@ -191,3 +191,15 @@ function clearForm(modalId) {
     }
 }
 
+
+/**
+ * Function to confirm and delete a plugin
+ * 
+ * @param {string} name - The name of the plugin to delete
+ */
+function confirmDeletePlugin(name) {
+    const confirmation = confirm(`Are you sure you want to delete the plugin "${name}"?`);
+    if (confirmation) {
+        deletePlugin(name);
+    }
+}
