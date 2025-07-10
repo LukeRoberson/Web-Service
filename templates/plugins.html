@@ -156,9 +156,20 @@
         <button class="w3-button w3-red" onclick="deletePlugin('{{ plugin.name }}')">Remove</button>
     </div>
 
-    <!-- Version as a footer -->
+    <!-- Version and status as a footer -->
     <footer class="w3-container w3-light-grey">
-        <p>Version 0.0.0</p>
+        {% if plugin.container and plugin.container['health'] == 'healthy' %}
+            <span class="w3-badge w3-green" title="Healthy">↑</span>
+        {% elif plugin.container and plugin.container['health'] == 'unhealthy' %}
+            <span class="w3-badge w3-orange" title="Unhealthy">!</span>
+        {% elif plugin.container and plugin.container['health'] == 'unknown' %}
+            <span class="w3-badge w3-grey" title="Unknown">?</span>
+        {% elif plugin.container and plugin.container['health'] == 'exited' %}
+            <span class="w3-badge w3-red" title="Exited">↓</span>
+        {% else %}
+            <span class="w3-badge w3-red" title="Down">↓</span>
+        {% endif %}
+        <p>Version {{ plugin.container['version'] }}</p>
     </footer>
 </div>
 

@@ -541,6 +541,22 @@ def plugins() -> Response:
 
     logging.debug("Plugin list loaded: %s", plugin_list)
 
+    for plugin in plugin_list:
+        # Make an API call to the container service to get container info
+        try:
+            container_response = requests.get(
+                CONTAINER_URL,
+                timeout=3,
+                params={
+                    'container': plugin['name']
+                }
+            )
+            plugin['container'] = container_response.json()['services'][0]
+
+        except Exception as e:
+            logging.error("Error fetching container info: %s", e)
+            plugin['container'] = None
+
     return make_response(
         render_template(
             'plugins.html',

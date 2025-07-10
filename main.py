@@ -201,11 +201,11 @@ def create_app(
         plugins = plugin_manager.read()
 
     # Dynamically register routes for each plugin
-    logging.info("Registering webhooks for plugins...")
-    logging.info(f"Plugins: {plugins}")
+    logging.debug("Registering webhooks for plugins...")
+    logging.debug(f"Plugins: {plugins}")
 
     for plugin in plugins:
-        print(f"Registering webhook for plugin: {plugin['name']}")
+        logging.debug(f"Registering webhook for plugin: {plugin['name']}")
         endpoint = f"webhook_{plugin['name']}"
         allowed_ips = plugin['webhook']['allowed-ip']
 
