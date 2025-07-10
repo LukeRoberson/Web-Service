@@ -7,6 +7,9 @@ Blueprints:
     - web_api: A Flask blueprint that handles API endpoints for
         the web interface.
 
+Functions:
+    - recycle_workers: Recycles the workers by touching a reload file.
+
 Routes:
     - /api/health:
         Test endpoint for health checks. Used by Docker
@@ -33,6 +36,7 @@ from flask import (
     make_response
 )
 import logging
+import os
 
 # Custom imports
 from sdk import error_response, success_response
@@ -49,6 +53,26 @@ web_api = Blueprint(
     'web_api',
     __name__
 )
+
+
+def recycle_workers() -> None:
+    """
+    Recycle the workers by touching the reload file.
+    This is used to apply configuration changes.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+
+    try:
+        with open(RELOAD_FILE, 'a'):
+            os.utime(RELOAD_FILE, None)
+
+    except Exception as e:
+        logging.error("Failed to update reload.txt: %s", e)
 
 
 @web_api.route(
@@ -137,6 +161,7 @@ def api_plugins() -> Response:
             return error_response('Failed to add plugin')
 
         # Successfully added the plugin
+        recycle_workers()
         return success_response(
             message='Plugin added successfully',
             status=201
