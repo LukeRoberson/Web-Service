@@ -103,8 +103,8 @@
 
         <!-- Webhook - Allowed IPs -->
         <label><b>Webhook - Allowed Source IPs:</b>
-            <p class="w3-small w3-text-grey">IP's allowed to send webhooks here (0.0.0.0 for any source)</p>
-            <input class="w3-input w3-border w3-margin" type="text" name="ip" value="0.0.0.0" autocomplete="off">
+            <p class="w3-small w3-text-grey">IP's allowed to send webhooks here (0.0.0.0/0 for any source)</p>
+            <input class="w3-input w3-border w3-margin" type="text" name="ip" value="0.0.0.0/0" autocomplete="off">
         </label>
     </form>
     
@@ -234,7 +234,7 @@
 
         <!-- Webhook - Allowed IPs -->
         <label><b>Webhook - Allowed Source IPs:</b>
-            <p class="w3-small w3-text-grey">IP's allowed to send webhooks here (0.0.0.0 for any source)</p>
+            <p class="w3-small w3-text-grey">IP's allowed to send webhooks here (0.0.0.0/0 for any source)</p>
             <input class="w3-input w3-border w3-margin" type="text" name="ip" value="{{ plugin.webhook['allowed-ip'] | join(',') or '' }}" autocomplete="off">
         </label>
     </form>

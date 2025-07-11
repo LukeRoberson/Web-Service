@@ -185,6 +185,7 @@ def api_plugins() -> Response:
             return error_response('Failed to update plugin')
 
         # Successfully updated the plugin
+        recycle_workers()
         return success_response('Plugin updated successfully')
 
     # DELETE is used to remove a plugin

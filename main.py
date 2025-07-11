@@ -54,15 +54,33 @@ from requests.exceptions import RequestException
 import os
 import logging
 from typing import Callable, Optional, Any
+import ipaddress
 
 # Custom imports
 from api import web_api
 from web import web_routes
-from sdk import Config, PluginManager
+from sdk import (
+    Config,
+    PluginManager,
+    SystemLog,
+)
 
 
 CONFIG_URL = "http://core:5100/api/config"
 PLUGIN_URL = "http://core:5100/api/plugins"
+LOG_URL = "http://logging:5100/api/log"
+
+
+# Initialize the SystemLog with default values
+system_log = SystemLog(
+    logging_url=LOG_URL,
+    source="web-interface",
+    destination=["web"],
+    group="service",
+    category="web-ui",
+    alert="system",
+    severity="info"
+)
 
 
 def create_webhook_handler(
@@ -101,6 +119,31 @@ def create_webhook_handler(
         # Collects the source IP address and headers
         src = request.remote_addr
         headers = dict(request.headers)
+
+        # Check if the source IP is allowed
+        if ip_list and src:
+            src_ip = ipaddress.ip_address(src)
+            allowed = any(
+                src_ip in ipaddress.ip_network(ip) for ip in ip_list
+            )
+            if not allowed:
+                logging.warning(
+                    f"Blocked webhook request from IP: {src} "
+                    f"for plugin '{plugin_name}'"
+                )
+                system_log.log(
+                    message=(
+                        f"Blocked webhook request from IP: {src} "
+                        f"to plugin '{plugin_name}'"
+                    ),
+                    severity="warning",
+                    alert="webhook-blocked",
+                )
+                return (
+                    b"Access denied",
+                    403,
+                    {'Content-Type': 'text/plain'}.items()
+                )
 
         # Remove headers that requests will set automatically
         headers.pop('Host', None)
